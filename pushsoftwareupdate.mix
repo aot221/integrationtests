@@ -1,0 +1,535 @@
+#!/usr/bin/python
+"""
+<Program Name>
+  pushsoftwareupdate.py
+  
+<Started>
+  December 15, 2008
+  
+<Author>
+  Brent Couvrette
+  couvb@cs.washington.edu
+  
+<Purpose>
+  This script pushes updates to the test folders on the update site.  With
+  a 25% chance, it will both change the keys it uses and change the
+  directory.  25% of the rest of the time it will just change the update
+  directory.
+  
+<TODO>
+  Eventually this script should also attempt to run the remote user tests
+  on the testbed nodes that it is updating.  However this is a lower
+  priority, and does not yet happen.
+  
+<Usage>
+  This script is meant to be run periodically via something like a cron
+  job.
+"""
+
+from repyportability import *
+# Needed to generate new public/private keys.
+# Is there a way to do this without making this a mix file yet?
+include rsa.repy
+
+import make_base_installers
+import clean_folder
+import imp
+
+# For determining if we should change directories or keys
+import random
+
+import time
+import os
+import tempfile
+import sys
+import shutil
+import subprocess
+
+
+def log(msg, sev=3):
+  """
+  <Purpose>
+    Logs the given message to stdout with some additional formatting.
+    
+  <TODO>
+    Eventually this should send emails to those concerned if there is a [WARN]
+    or [ERROR] message.
+    
+  <Arguments>
+    msg - the message to print out.
+    sev - Used to indicate the severity of this message.  3 means it is just
+          informational, 2 is a warning that something is minorly wrong, and 1
+          is for a critical error.  When these messages are logged, they will 
+          get the tags [INFO], [WARN], and [ERROR] respectively.  Messages are
+          logged as sev=3 by default.
+    
+  <Exceptions>
+    None.
+    
+  <Side Effects>
+    Prints msg to stdout.
+    
+  <Returns>
+    None.
+  """
+  if sev == 1:
+    print time.ctime() + " [ERROR] : " + msg
+  elif sev == 2:
+    print time.ctime() + " [WARN] : " + msg
+  else:
+    print time.ctime() + " [INFO] : " + msg
+    
+  return
+ 
+
+# Constants indicating the percent of the time the key should be updated
+# and the directory should be updated.
+chance_keyupdate = 0.25
+chance_directoryupdate = 0.25
+
+# Constant indicating the base directory that updates will be pushed to.
+# Should this be hardcoded here?  I think so because this script is meant
+# to run as a cron job, so it would be easiest to just change the value
+# here, then whenever it is run next, it would have the new site.
+update_base_directory = '/home/couvb/public_html/updatesite/blackbox/'
+
+# Constant indicating the name of the file within the folder above 
+# containing the folder number of the current test update folder.
+# Should this be hardcoded here?  See argument above.
+foldernum_fn = 'current_folder_num'
+
+# Constant indicating the name of the file within the folder above 
+# containing the key number of the current test update folder.
+# Should this be hardcoded here?  See argument above.
+keynum_fn = 'current_key_num'
+
+# Constant indicating the name of the file within the folder above
+# containing the current update number.
+# Should this be hardcoded here?  See argument above.
+updatenum_fn = 'current_update_num'
+
+# Constant indicating the name of the folder within the folder above
+# that will contain the installers.
+# Should this be hardcoded here?  See argument above.
+installer_folder = 'install_files/'
+
+# Constant indicating the base url that updates will be downloaded from.
+# Should this be hardcoded here?  See argument above.
+update_base_url = 'http://seattle.cs.washington.edu/couvb/updatesite/blackbox/'
+
+# Constant indicating the location of the svn trunk that is used to
+# grab the necesary files to be put into the update.
+# Should this be hardcoded here?  See argument above.
+svn_trunk_location = '/home/couvb/seattlesvn/trunk'
+
+# Constant indicating the foldername that will contain all the keypairs
+# Should this be hardcoded here?  See argument above.
+key_folder = 'blackbox_keys/'
+
+# Constant indicating the size of keys we wish to create be default.
+# Should this be hardcoded here?  See argument above.
+key_size = 512
+
+# List of nodes that ought to be recieving this update.  This should be the
+# full identifier used to scp to/from where seattle is installed on the node.
+# Currently we assume that we can scp without a password to all the nodes
+test_nodes = []
+
+def check_success(updatenum):
+  """
+  <Purpose>
+    Checks the nodes that should be receiving updates, and makes sure that
+    after one hour, they are all updated.  Currently it just checks by
+    contacting the nodemanager and asking for a version number, and making
+    sure it matches the given one.  If there is a failure, an error will
+    be logged with details of which node(s) and which version failed.
+    
+  <Arguments>
+    updatenum - The version number that the node should have
+  """
+  # Sleep for an hour.  After this time, all nodes should have updated.
+  time.sleep(3600)
+  
+  for test_node in test_nodes:
+    # TODO: somehow check that the node is up and running with the correct
+    # version
+    pass
+  
+
+def makekeys(keynum):
+  """
+  <Purpose>
+    Generates a new public/private keypair whose filename ends in the given
+    number.  The key pair will be put into the key_folder.
+    
+  <Side Effects>
+    A new public/private keypair is put into the key_folder.
+  
+  <Arguments>
+    keynum - The number of the new key
+  """
+  nextprivkeyname = key_folder + 'privkey' + str(keynum)
+  nextpubkeyname = key_folder + 'pubkey' + str(keynum)
+  newkeys = rsa_gen_pubpriv_keys(key_size)        
+  rsa_privatekey_to_file(newkeys[1], nextprivkeyname)
+  rsa_publickey_to_file(newkeys[0], nextpubkeyname)
+  
+
+def create_installers(trunk_location, pubkey, privkey, 
+    updatesite, updaterpublickey, updatenum):
+  """
+  <Purpose>
+    Given the location of the repository's trunk, it will prepare the
+    files for the base installers (or for a software update) in a
+    specified location, including all the files necessary for the
+    metainfo file.  Also replaces the softwareupdater's updatesite
+    and update public key with the given values.  Then it packages these
+    files up appropriately using the make_base_installers script.
+  
+  <Arguments>
+    trunk_location:
+      The path to the trunk directory of the repository, used to
+      find all the requisite files that make up the installer.
+    pubkey:
+      The path to a public key that will be used to generate the
+      metainfo file.
+    privkey: 
+      The path to a private key that will be used to generate the
+      metainfo file.
+    updatesite:
+      The update url to put into the softwareupdater.
+    updaterpublickey:
+      The filename of the public key file to put into the softwareupdater.
+    updatenum:
+      The number to be used as the version for nmmain.py
+    
+  <Exceptions>
+    IOError on bad filepaths.
+    
+  <TODO>
+    It needs to do the customization step as well.  I am not currently aware
+    of how this works.
+  """
+  tempdir = tempfile.mkdtemp()
+  # Do the initial preparation
+  prepare_initial_files(trunk_location, pubkey, privkey, tempdir, updatesite,
+      updaterpublickey, updatenum)
+  # Do the final base preparation
+  make_base_installers.prepare_final_files(trunk_location, tempdir)
+  # Package and deploy the windows installer
+  make_base_installers.package_win(trunk_location + "/dist", tempdir, 
+      'blackbox_win' + str(updatenum) + '.zip', update_base_directory + 
+      installer_folder)
+  # Package and deploy the linux installer
+  make_base_installers.package_linux(trunk_location + "/dist", tempdir,
+      'blackbox_linux' + str(updatenum) + '.tgz', update_base_directory + 
+      installer_folder)
+  # Package and deploy the mac installer
+  make_base_installers.package_mac(trunk_location + "/dist", tempdir,
+      'blackbox_mac' + str(updatenum) + '.tgz', update_base_directory + 
+      installer_folder)
+      
+  # Remove the tempdir now that we are done with it.
+  shutil.rmtree(tempdir)
+  
+
+def main():
+  """
+  <Purpose>
+    Runs one iteration of the softwareupdate blackbox test
+    
+  <Side Effects>
+    An update is pushed to the test update location given by 
+    update_base_directory.
+    
+  <Returns>
+    None.
+  """
+  
+  # Determine whether we will be changing keys or changing directories
+  # on this run through.
+  change_keys = False
+  change_directory = False
+  random_value = random.random()
+  if random_value < chance_keyupdate:
+    change_keys = True
+    change_directory = True
+  else:
+    random_value = random.random()
+    if random_value < chance_directoryupdate:
+      change_directory = True
+      
+  # Read in the current update num
+  if not os.path.exists(update_base_directory + updatenum_fn):
+    log('updatenum file (' + update_base_directory + updatenum_fn + 
+        ') did not exist, creating it now with an initial value of 0', 2)
+    # If the file does not exist, create it and initialize it to 0
+    updatenum_file = open(update_base_directory + updatenum_fn, 'w')
+    updatenum_file.write('0')
+    
+  updatenum_file = open(update_base_directory + updatenum_fn, 'r')
+  currentupdatenum = updatenum_file.read()
+  updatenum_file.close()
+  try:
+    currentupdatenum = int(currentupdatenum)
+  except Exception:
+    # I wanted to be more specific on the exception that I am catching
+    # here, however the python documentation is unclear about what 
+    # exception is raised when this sort of cast is performed.
+    log('Value read in for current update number is not a number! \n \
+         read value == ' + str(currentupdatenum), 1)
+    sys.exit(1)
+    
+  log('Updating from version ' + str(currentupdatenum))
+  # The new version will have the next update number
+  currentupdatenum = currentupdatenum + 1
+      
+  # Read in the current folder num
+  if not os.path.exists(update_base_directory + foldernum_fn):
+    log('foldernum file (' + update_base_directory + foldernum_fn + 
+        ') did not exist, creating it now with an initial value of 0', 2)
+    # If the file does not exist, create it and initialize it to 0
+    foldernum_file = open(update_base_directory + foldernum_fn, 'w')
+    foldernum_file.write('0')
+    
+  foldernum_file = open(update_base_directory + foldernum_fn, 'r')
+  currentfoldernum = foldernum_file.read()
+  foldernum_file.close()
+  try:
+    currentfoldernum = int(currentfoldernum)
+  except Exception:
+    # I wanted to be more specific on the exception that I am catching
+    # here, however the python documentation is unclear about what 
+    # exception is raised when this sort of cast is performed.
+    log('Value read in for current folder number is not a number! \n \
+         read value == ' + str(currentfoldernum), 1)
+    sys.exit(1)
+  
+  log('currentfoldernum = ' + str(currentfoldernum))
+  
+  # Read in the current key num
+  if not os.path.exists(update_base_directory + keynum_fn):
+    log('keynum file (' + update_base_directory + keynum_fn + 
+        ') did not exist, creating it now with an initial value of 0', 2)
+    # If the file does not exist, create it and initialize it to 0
+    keynum_file = open(update_base_directory + keynum_fn, 'w')
+    keynum_file.write('0')
+    
+  keynum_file = open(update_base_directory + keynum_fn, 'r')
+  currentkeynum = keynum_file.read()
+  keynum_file.close()
+  try:
+    currentkeynum = int(currentkeynum)
+  except Exception:
+    # I wanted to be more specific on the exception that I am catching
+    # here, however the python documentation is unclear about what 
+    # exception is raised when this sort of cast is performed.
+    log('Value read in for current key number is not a number! \n \
+         read value == ' + str(currentkeynum), 1)
+    sys.exit(1)
+    
+  log('currentkeynum = ' + str(currentkeynum))
+
+  # The current update folder is where we are pushing this update,
+  # the next update folder is the url that we will put into the 
+  # next softwareupdater.  By default the next update folder uses the same
+  # folder number as the current one.
+  updatefoldername = update_base_directory + 'update_location' + \
+      str(currentfoldernum)
+  nextupdatefoldername = update_base_url + 'update_location' + \
+      str(currentfoldernum)
+      
+  # The current public and private keys are the ones that need to be used to 
+  # deliver the current update.  The next public key is the one that will be
+  # put into the next softwareupdater.  By default they are the same keys.
+  pubkeyname = key_folder + 'pubkey' + str(currentkeynum)
+  privkeyname = key_folder + 'privkey' + str(currentkeynum)
+  nextpubkeyname = key_folder + 'pubkey' + str(currentkeynum)
+  nextprivkeyname = key_folder + 'privkey' + str(currentkeynum)
+  
+  if change_keys:
+    # If the keys are to be changed, create the new key, change the
+    # nextpubkeyname to the newly generated key, and increment the count in
+    # the file containing the current key number.
+    log('Changing to a new key, num = ' + str(currentkeynum+1))
+    # Generate new keys
+    nextpubkeyname = key_folder + 'pubkey' + str(currentkeynum+1)
+    makekeys(currentkeynum+1)
+    
+    # Increment the key num in the file
+    keynum_file = open(update_base_directory + keynum_fn, 'w')
+    keynum_file.write(str(currentkeynum+1))
+    keynum_file.close()
+    
+  if change_directory:
+    # If the directory is to be changed, change the nextupdatefoldername to
+    # the new url, and increment the counter in the file containing the 
+    # current folder number.
+    log('Changing to a new directory, num = ' + str(currentfoldernum+1))
+    nextupdatefoldername = update_base_url + 'update_location' + \
+        str(currentfoldernum+1)
+    foldernum_file = open(update_base_directory + foldernum_fn, 'w')
+    foldernum_file.write(str(currentfoldernum+1))
+    foldernum_file.close()
+  
+  
+  if not (os.path.exists(pubkeyname) and os.path.exists(pubkeyname)):
+    # If either the public or private key is not here, we are hosed.  We
+    # can't just recreate them because then they will not match the ones
+    # installed on the test systems.  We will log the error, and exit.
+    # hopefully someone will notice and correct the issue before the next
+    # run time
+    log('Current public/private keypair did not exist! num = ' + 
+        str(currentkeynum), 1)
+    sys.exit(1)
+    
+  if not os.path.exists(nextpubkeyname):
+    # If the next key does not exist, create it as well.
+    # Can this actually ever happen?
+    log('Next public key did not exist! keyname = ' + nextpubkeyname, 1)
+    newkeys = rsa_gen_pubpriv_keys(key_size)        
+    rsa_privatekey_to_file(newkeys[1],nextprivkeyname)
+    rsa_publickey_to_file(newkeys[0],nextpubkeyname)
+  
+  # Make sure the update folder we are using actually exists
+  if not os.path.exists(updatefoldername):
+    log('Current update folder did not exist!')
+    os.mkdir(updatefoldername)
+    
+  # Push the update!
+  prepare_initial_files(svn_trunk_location, pubkeyname, privkeyname,
+      updatefoldername, nextupdatefoldername, nextpubkeyname, currentupdatenum)
+      
+  # Put out the new installers!
+  create_installers(svn_trunk_location, pubkeyname, privkeyname,
+      nextupdatefoldername, nextpubkeyname, currentupdatenum)
+      
+  # Update the update number file
+  updatenum_file = open(update_base_directory + updatenum_fn, 'w')
+  updatenum_file.write(str(currentupdatenum))
+  updatenum_file.close()
+      
+  log('Update ' + str(currentupdatenum) + ' has been pushed to ' +
+      updatefoldername + ' with key number ' + str(currentkeynum))
+      
+  check_success()
+
+
+def prepare_initial_files(trunk_location, pubkey, privkey, output_dir, 
+    updatesite, updaterpublickey, updatenum):
+  """
+  <Purpose>
+    Given the location of the repository's trunk, it will prepare the
+    files for the base installers (or for a software update) in a
+    specified location, including all the files necessary for the
+    metainfo file.  Also replaces the softwareupdater's updatesite
+    and update public key with the given values.
+    
+    This was taken from Carter's make_base_installers.py and slightly
+    modified by Brent such that it modifies the softwareupdater after
+    it has been copied to the updatesite, but before the metainfo file
+    has been written.
+  
+  <Arguments>
+    trunk_location:
+      The path to the trunk directory of the repository, used to
+      find all the requisite files that make up the installer.
+    pubkey:
+      The path to a public key that will be used to generate the
+      metainfo file.
+    privkey: 
+      The path to a private key that will be used to generate the
+      metainfo file.
+    output_dir:
+      The directory where the installer files will be placed.
+    updatesite:
+      The update url to put into the softwareupdater.
+    updaterpublickey:
+      The filename of the public key file to put into the softwareupdater.
+    updatenum:
+      The number to be used as the version for nmmain.py
+  
+  <Exceptions>
+    IOError on bad filepaths.
+    
+  <Side Effects>
+    None.
+     
+  <Returns>
+    None.
+  """
+  # Remember the original working directory
+  orig_dir = os.getcwd()
+  real_pubkey = os.path.realpath(pubkey)
+  real_privkey = os.path.realpath(privkey)
+  os.chdir(trunk_location)
+  # Remember all important locations relative to the trunk
+  dist_dir = os.getcwd() + "/dist"
+  # Run preparetest, adding the files to the temp directory
+  os.popen("python preparetest.py " + output_dir)
+  # Make sure that the folder is initially clean and correct
+  clean_folder.clean_folder(dist_dir + "/initial_files.fi", output_dir)
+  
+  # Modify the softwareupdater as appropriate
+  os.chdir(orig_dir)
+  replace_update_loc_and_key(output_dir + '/softwareupdater.py', 
+      updaterpublickey, updatesite)
+  
+  # Modify nmmain as appropriate
+  replace_nmmain_version(output_dir + '/nmmain.py', updatenum)
+  
+  # Generate the metainfo file
+  os.chdir(output_dir)
+  writemetainfo = imp.load_source("writemetainfo", "writemetainfo.py")
+  writemetainfo.create_metainfo_file(real_privkey, real_pubkey)
+  os.chdir(orig_dir)
+  
+
+# Private fuction that modifies the nmmain.py at the given path to use the
+# given version number.
+def replace_nmmain_version(nmmain_path, newversion):
+  nmfile = open(nmmain_path, 'r')
+  nmmaindata = nmfile.read()
+  nmfile.close
+  # Do the replacement.
+  vindex = nmmaindata.find('version = "')
+  eolindex = nmmaindata.find('\n', vindex)
+  nmmaindata = nmmaindata[:vindex] + 'version = "' + str(newversion) + '"' + \
+      nmmaindata[eolindex:]
+  # Write back the changes.
+  nmfile = open(nmmain_path, 'w')
+  nmfile.write(nmmaindata)
+  nmfile.close()
+      
+
+# Private function that modifies the softwareupdater at the given path
+# to contain the public key from the given public key file, and the 
+# given update site.
+def replace_update_loc_and_key(softwareupdater_path, publickey, updatesite):
+  updaterfile = open(softwareupdater_path, 'r')
+  updatertext = updaterfile.read()
+  updaterfile.close()
+  
+  # Replace the public key in the softwareupdater with the given one
+  keyindex = updatertext.find('softwareupdatepublickey')
+  eolindex = updatertext.find('\n', keyindex)
+  keyfile = open(publickey, 'r')
+  keystring = keyfile.read()
+  keyfile.close()
+  newkey = rsa_string_to_publickey(keystring)
+  updatertext = updatertext[:keyindex] + 'softwareupdatepublickey =' + \
+      str(newkey) + updatertext[eolindex:]
+  
+  # Update the update site url to the given one
+  siteindex = updatertext.find('softwareurl = "http://')
+  eolindex = updatertext.find('\n', siteindex)
+  updatertext = updatertext[:siteindex] + 'softwareurl = "' + updatesite + \
+      updatertext[eolindex:]
+      
+  # Write this change back to softwareupdater
+  updaterfile = open(softwareupdater_path, 'w')
+  updaterfile.write(updatertext)
+  updaterfile.close()
+
+if __name__ == '__main__':
+  main()
