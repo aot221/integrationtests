@@ -33,7 +33,7 @@
 
   This script takes no arguments. A typical use of this script is to
   have it run periodically using something like the following crontab line:
-  7 * * * *  export GMAIL_USER='..' && export GMAIL_PWD='..' && /usr/bin/python /home/seattle/download_and_install_seattle.py > /home/seattle/cron_log.txt
+  7 * * * *  export GMAIL_USER='..' && export GMAIL_PWD='..' && /usr/bin/python /home/seattle/downloadandinstallseattle.py > /home/seattle/cron_log.txt
 """
 
 import time
