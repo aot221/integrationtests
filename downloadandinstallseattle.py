@@ -27,13 +27,13 @@
   - notify_list, a list of strings with emails denoting who will be
     emailed when something goes wrong
 
-  - gmail_user, email_pwd, the username and password of the gmail user
-    who will be sending the email to the emails in the notify_list
+  - GMAIL_USER and GMAIL_PWD environment variables: the username and
+    password of the gmail user who will be sending the email to the
+    emails in the notify_list (see crontab line below).
 
   This script takes no arguments. A typical use of this script is to
-  have it run periodically via, using something like the following
-  crontab line:
-  7 * * * * /usr/bin/python /home/seattle/download_and_install_seattle.py > /home/seattle/cron_log.txt
+  have it run periodically using something like the following crontab line:
+  7 * * * *  export GMAIL_USER='..' && export GMAIL_PWD='..' && /usr/bin/python /home/seattle/download_and_install_seattle.py > /home/seattle/cron_log.txt
 """
 
 import time
@@ -41,75 +41,19 @@ import os
 import socket
 import sys
 import traceback
-
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email import Encoders
 
+import send_gmail
+
 prefix="/home/seattle"
 seattle_linux_url = "https://seattle.cs.washington.edu/geni/download/seattle_install_tester/linux"
 onepercent_publickey_e = 60468416553866380677116390576156076729024198623214398075105135521876532012409126881929651482747468329767098025048318042065154275278061294675474785736741621552566507350888927966579854246852107176753219560487968433237288004466682136195693392768043076334227134087671699044294833943543211464731460317203206091697L
 notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu"]
 
-try:
-    gmail_user = os.environ['GMAIL_USER']
-except:
-    print "Failed to retrieve GMAIL_USER from shell environ"
-    sys.exit(0)
-
-try:
-    gmail_pwd = os.environ['GMAIL_PWD']
-except:
-    print "Failed to retrieve GMAIL_PWD from shell environ"
-    sys.exit(0)
-
-def mail(to, subject, text, attach):
-    """
-    <Purpose>
-        Function to send an email to 'to' with subject 'subject' with
-        text 'test' and attachment filename 'attach'
-
-    <Arguments>
-        to, who to send the email to, an email address string
-        subject, the string subject line of the email
-        text, the string text body of the email
-        attach, the filename to attach to the message
-
-    <Exceptions>
-        Not sure?
-
-    <Side Effects>
-        Sends an email through gmail to a recipient.
-
-    <Returns>
-        None.
-    """
-    msg = MIMEMultipart()
-    msg['From'] = gmail_user
-    msg['To'] = to
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(text))
-
-    if attach != "":
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(open(attach, 'rb').read())
-        Encoders.encode_base64(part)
-        part.add_header('Content-Disposition',
-                        'attachment; filename="%s"' % os.path.basename(attach))
-        msg.attach(part)
-
-    mailServer = smtplib.SMTP("smtp.gmail.com", 587)
-    mailServer.ehlo()
-    mailServer.starttls()
-    mailServer.ehlo()
-    mailServer.login(gmail_user, gmail_pwd)
-    mailServer.sendmail(gmail_user, to, msg.as_string())
-    # Should be mailServer.quit(), but that crashes...
-    mailServer.close()
-    return
 
 def log(msg):
     """
@@ -188,7 +132,7 @@ def notify(text):
     subj = "seattle test failed @ " + hostname + " : " + sys.argv[0]
     for emailaddr in notify_list:
         log("notifying " + emailaddr)
-        mail(emailaddr, subj, text, "")
+        send_gmail.send_gmail(emailaddr, subj, text, "")
     return
 
 
@@ -276,6 +220,12 @@ def main():
     <Returns>
         None.
     """
+    # setup the gmail user/password to use when sending email
+    success,explanation_str = send_gmail.init_gmail()
+    if not success:
+        log(explanation_str)
+        sys.exit(0)
+
     # download and install Seattle
     download_and_install()
 
