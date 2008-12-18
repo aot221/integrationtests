@@ -77,7 +77,7 @@ def init_gmail(gmail_user="", gmail_pwd="", gmail_user_shvarname="GMAIL_USER", g
         
     if gmail_pwd is "":
         try:
-            gmail_pwd = os.environ[gmail_user_shvarname]
+            gmail_pwd = os.environ[gmail_pwd_shvarname]
         except:
             return False, "Failed to retrieve " + str(gmail_pwd_shvarname) + " shell environment var"
 
