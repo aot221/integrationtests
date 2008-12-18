@@ -40,7 +40,7 @@ import send_gmail
 import openDHTadvertise
 
 # list of people to notify by email on failure
-notify_list = ["ivan@cs.washington.edu"] #, "justinc@cs.washington.edu"]
+notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu"]
 
 # event for communicating when the lookup is done or timedout
 lookup_done_event = threading.Event()
@@ -215,8 +215,7 @@ def main():
     # get(key) from OpenDHT
     log("calling openDHTadvertise.lookup(key: " + str(key) + ")")
     try:
-        # ret_value = openDHTadvertise.lookup(key)
-        time.sleep(35)
+        ret_value = openDHTadvertise.lookup(key)
         # TODO: check the return value as well
         # ret_value = int(ret_value[0])
     except:
