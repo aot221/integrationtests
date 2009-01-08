@@ -25,7 +25,7 @@
 
   This script takes no arguments. A typical use of this script is to
   have it run periodically using something like the following crontab line:
-  7 * * * *  export GMAIL_USER='..' && export GMAIL_PWD='..' && /usr/bin/python /home/seattle/opendhtputget.py > /home/seattle/cron_log.opendhtpuget
+  7 * * * *  export GMAIL_USER='..' && export GMAIL_PWD='..' && /usr/bin/python /home/seattle/opendhtputget.py > /home/seattle/cron_log.opendhtputget
 """
 
 import time
