@@ -33,7 +33,7 @@
 
   This script takes no arguments. A typical use of this script is to
   have it run periodically using something like the following crontab line:
-  7 * * * *  export GMAIL_USER='..' && export GMAIL_PWD='..' && /usr/bin/python /home/seattle/downloadandinstallseattle.py > /home/seattle/cron_log.downloadandinstallseattle
+  7 * * * *  export GMAIL_USER='username' && export GMAIL_PWD='password' && /usr/bin/python /home/seattle/downloadandinstallseattle/downloadandinstallseattle.py > /home/seattle/cron_log.downloadandinstallseattle
 """
 
 import time
@@ -48,13 +48,17 @@ import send_gmail
 prefix="/home/seattle"
 
 # the url from where we will fetch a linux version of seattle
-seattle_linux_url = "https://seattle.cs.washington.edu/geni/download/seattle_install_tester/linux"
+seattle_linux_url = "https://seattlegeni.cs.washington.edu/geni/download/seattle_install_tester/seattle_linux.tgz"
 
 # public key we will check for after seattle registers with geni
-onepercent_publickey_e = 60468416553866380677116390576156076729024198623214398075105135521876532012409126881929651482747468329767098025048318042065154275278061294675474785736741621552566507350888927966579854246852107176753219560487968433237288004466682136195693392768043076334227134087671699044294833943543211464731460317203206091697L
+# onepercent.publickey:
+# onepercent_publickey_e = 60468416553866380677116390576156076729024198623214398075105135521876532012409126881929651482747468329767098025048318042065154275278061294675474785736741621552566507350888927966579854246852107176753219560487968433237288004466682136195693392768043076334227134087671699044294833943543211464731460317203206091697L
+
+# onepercent2.publickey:
+onepercent_publickey_e = 11374924881397627694657891503972818975279141290591879258944253588899600389096760006002101031499188547300330800546193710201543484693030070856785048737553629L
 
 # the people to notify on failure/if anything goes wrong
-notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu"]
+notify_list = ["ivan@cs.washington.edu, justinc@cs.washington.edu"]
 
 def log(msg):
     """
