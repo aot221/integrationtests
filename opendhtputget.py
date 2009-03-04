@@ -39,6 +39,9 @@ import random
 import send_gmail
 import openDHTadvertise
 
+# Armon: This is to replace using the time command with getruntime
+import nonportable
+
 # list of people to notify by email on failure
 notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu"]
 
@@ -159,9 +162,9 @@ def lookup_timedout():
     
     # wait for the event to be set, timeout after 30 minutes
     wait_time = 1800
-    tstamp_before_wait = time.time()
+    tstamp_before_wait = nonportable.getruntime()
     lookup_done_event.wait(wait_time)
-    tstamp_after_wait = time.time()
+    tstamp_after_wait = nonportable.getruntime()
 
     t_waited = tstamp_after_wait - tstamp_before_wait
     if abs(wait_time - t_waited) < 5:
