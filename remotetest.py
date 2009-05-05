@@ -171,6 +171,10 @@ def main():
   print "Uploading tar file..."
   status = upload_tar(tarfile,socket)
   print "Upload Status:",status
+  
+  # Remove the tar file
+  print "Removing tar file:",tarfile
+  os.remove(tarfile)
   if not status:
     exit()
 
@@ -187,10 +191,6 @@ def main():
     socket.close()
   except:
     pass
-
-  # Remove the tar file
-  print "Removing tar file:",tarfile
-  os.remove(tarfile)
 
   print "Done! Exiting."
 
