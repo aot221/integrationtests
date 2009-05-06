@@ -51,12 +51,13 @@ def authenticate_connection(socket):
 
   # Split the message
   (user,password) = message.split(";",1)
-  
+   
   # Check for authentication
   authenticated = False
   if user in ALLOWED_USERS and password == ALLOWED_USERS[user]:
     authenticated = True
- 
+  print "User:",user,", Authenticated:",authenticated 
+
   # Formulate a response
   response = str(authenticated).ljust(8) 
   
@@ -67,14 +68,12 @@ def authenticate_connection(socket):
 def get_file(socket):
   # Get the message
   message = get_message(socket, 8)
-  print "Received File Upload..."
  
   # Split
   precalchash = message[:32]
   actualmessage = message[32:]
 
   # Calculate the Hash
-  print "Calculating Hash..."
   hash = hashlib.md5(actualmessage).hexdigest()   
   
   # Check that the hashes match
@@ -82,7 +81,6 @@ def get_file(socket):
   print "Hash Match:",match
 
   # Respond
-  print "Sending Response..."
   response = str(match).ljust(8)
   socket.send(response)
 
@@ -189,7 +187,7 @@ def connection_handler(remoteip, remoteport, socket, sockh, waith):
   # Try to handle the request. Log failures and always close the socket.
   try:
     # Check if the connection is authenticated
-    print "New Connection! Authenticating..."
+    print round(time.time()),"-Connected IP:",remoteip,"Port:",remoteport
     authenticated = authenticate_connection(socket)
     if not authenticated:
       raise Exception, "Bad Auth!"
@@ -197,16 +195,18 @@ def connection_handler(remoteip, remoteport, socket, sockh, waith):
     # Get the file
     print "Downloading tar ball..."
     filecontents = get_file(socket)
-    
+    size = len(filecontents)
+ 
     # Setup the test directory
-    print "Extracting Tar File. Setting up environment..."
+    print "Extracting Tar File. Size:",size,"Setting up environment..."
     tmpdir = setup_environ(filecontents)
     filecontents = None # Un-allocate the memory    
     
     try:
       # Get the user arguments
       arguments = get_message(socket)
-   
+      print "Argument:",arguments
+ 
       # Run the test!
       print "Running Test..."
       run_test(arguments, tmpdir, socket)
