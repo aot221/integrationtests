@@ -231,6 +231,7 @@ def connection_handler(remoteip, remoteport, socket, sockh, waith):
 
 # Updates server configuration, returns dictionary containing IP's, and hostnames
 def update_configuration():
+  global ALLOWED_USERS
   # Store the configuration
   # We will read user names and passwords, our advertisement name
   # and our ips to listen on (only valid at start)
@@ -258,10 +259,11 @@ def update_configuration():
         configuration["stderr"] = False
 
   # Reset the passwords
-  ALLOWED_USERS.clear()
+  new_allowed = {}
   for (user,passw) in configuration["users"]:
-    ALLOWED_USERS[user]=passw
-  
+    new_allowed[user]=passw
+  ALLOWED_USERS = new_allowed
+
   # Return our configuration
   return configuration
 
@@ -296,7 +298,11 @@ def main():
       advertise_key =  "SEATTLE_TESTBED_"+config_reloaded["hostname"]
       for ip in config["ips"]:
         centralizedadvertise_announce(advertise_key, ip, AD_TTL)
-      
+    
+    # Flush stdout and stderr
+    sys.stdout.flush()
+    sys.stderr.flush()
+ 
     # Sleep for a while
     time.sleep(RELOAD_INTV)  
 
