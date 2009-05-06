@@ -7,8 +7,10 @@ import time
 SAMPLE=60
 
 def main():
+  global SAMPLE
+
   # Parse the options
-  options, args = getopt.getopt(sys.argv[1:], "", ["user=","pass=","host=","dir=","args="])
+  options, args = getopt.getopt(sys.argv[1:], "", ["help","sample=","user=","pass=","host=","dir=","args="])
   
   config = {"user":None,"pass":None,"hosts":[],"dir":None,"args":None}  
   for (flag, val) in options:
@@ -22,6 +24,13 @@ def main():
       config["dir"] = val
     elif flag == "--args":
       config["args"] = val
+    elif flag == "--sample":
+      SAMPLE=int(val)
+    elif flag == "--help":
+      print "Takes the same parameters as remotetest.py with some minor changes."
+      print "Does not accept --ip, but allows multiple --host entries."
+      print "Takes an optional --sample flag which changes the default sample rate (60 sec)."
+      exit()
 
   # Build the generic command
   cmd = "python remotetest.py --user "+config['user']+" --pass "+config['pass']+" --dir "+config['dir']+" --args '"+config['args']+"' --host "
