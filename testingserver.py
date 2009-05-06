@@ -93,7 +93,7 @@ def setup_environ(filecontents):
   
   # Save the tar file
   tarfilename = os.path.join(tmpdir,"files.tar")
-  fileh = open(tarfilename,"w")
+  fileh = open(tarfilename,"wb")
   fileh.write(filecontents)
   fileh.close()
 
@@ -182,12 +182,12 @@ def connection_handler(remoteip, remoteport, socket, sockh, waith):
     print "Downloading tar ball..."
     filecontents = get_file(socket)
     
+    # Setup the test directory
+    print "Extracting Tar File. Setting up environment..."
+    tmpdir = setup_environ(filecontents)
+    filecontents = None # Un-allocate the memory    
+    
     try:
-      # Setup the test directory
-      print "Extracting Tar File. Setting up environment..."
-      tmpdir = setup_environ(filecontents)
-      filecontents = None # Un-allocate the memory    
-
       # Get the user arguments
       arguments = get_message(socket)
    

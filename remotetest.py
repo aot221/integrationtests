@@ -77,8 +77,8 @@ def authenticate(socket, config):
 
 # Creates a tar file of the needed data
 def create_tar(config):
-  name = "files."+str(int(time.time()))+".tar"
-  tar = tarfile.open(name,"w")
+  name = "files."+str(int(time.time()))+".tgz"
+  tar = tarfile.open(name,"w:gz")
   tar.add(config["dir"],arcname="")
   tar.close()
   return name
@@ -86,7 +86,7 @@ def create_tar(config):
 # Uploads the tar file
 def upload_tar(tarfilename, socket):
   # Read in the tar file
-  fileh = open(tarfilename)
+  fileh = open(tarfilename,"rb")
   data = fileh.read()
   fileh.close()
 
