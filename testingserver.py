@@ -289,16 +289,20 @@ def main():
     # Do not override original config, since we won't change our listening IP's
     config_reloaded = update_configuration()
 
-    # Check if our hostname is set
-    if config_reloaded["hostname"]:
-      # Advertise our hostname under the master list
-      centralizedadvertise_announce(TESTBEDS,config_reloaded["hostname"],AD_TTL)
- 
-      # Advertise our IP under our own name
-      advertise_key =  "SEATTLE_TESTBED_"+config_reloaded["hostname"]
-      for ip in config["ips"]:
-        centralizedadvertise_announce(advertise_key, ip, AD_TTL)
-    
+    try:
+      # Check if our hostname is set
+      if config_reloaded["hostname"]:
+        # Advertise our hostname under the master list
+        centralizedadvertise_announce(TESTBEDS,config_reloaded["hostname"],AD_TTL)
+   
+        # Advertise our IP under our own name
+        advertise_key =  "SEATTLE_TESTBED_"+config_reloaded["hostname"]
+        for ip in config["ips"]:
+          centralizedadvertise_announce(advertise_key, ip, AD_TTL)
+    except:
+      # Ignore advertisement errors
+      pass
+
     # Flush stdout and stderr
     sys.stdout.flush()
     sys.stderr.flush()
