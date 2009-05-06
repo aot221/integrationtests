@@ -20,6 +20,7 @@ ALLOWED_USERS = {}
 # Name of our configuration file
 CONFIG_FILE = "server.cfg"
 RELOAD_INTV = 60              # How long between reloading our configuration and advertising
+INITIAL_CONFIG = {}           # Initially loaded config file, only the initial
 
 # Advertisement info
 AD_TTL = 120    # 2 minutes
@@ -121,6 +122,13 @@ SAMPLE_RATE = 0.1
 
 # Run the test, streams results back to the user in chunks
 def run_test(arguments, tmpdir, socket):
+  global INITIAL_CONFIG
+  enable_stderr = INITIAL_CONFIG["stderr"]
+  
+  # Inform the user what is happening  
+  if not enable_stderr:
+    socket.send("NOTE: stderr will be deferred until program exits.\n")
+
   # Go into the temporary directory
   originaldir = os.getcwd()
   os.chdir(tmpdir)
@@ -133,20 +141,28 @@ def run_test(arguments, tmpdir, socket):
     
     # Read the data from stdout and send it, timeout after 10 minutes
     while proc.poll() == None and time.time() - start < 600:
-      try:
-        # Check for ready sockets
-        (rdy,wrt,excep) = select.select([proc.stdout, proc.stderr],[],[],SAMPLE_RATE)
-      except Exception, e:
-        rdy = []
+      # Enable stderr by default, disable on some systems (Windows)
+      # On windows select cannot be used, defer stderr
+      if enable_stderr:
+        try:
+          # Check for ready sockets
+          (rdy,wrt,excep) = select.select([proc.stdout, proc.stderr],[],[],SAMPLE_RATE)
+        except Exception, e:
+          rdy = []
       
-      # Get data from each ready handle
-      data = ""
-      for handle in rdy:
-        data += handle.read(CHUNK_SIZE)
-      # If there is any data, write it out
-      if data != "":
-        socket.send(data)
- 
+        # Get data from each ready handle
+        data = ""
+        for handle in rdy:
+          data += handle.read(CHUNK_SIZE)
+        # If there is any data, write it out
+        if data != "":
+          socket.send(data)
+      else:
+        # Only check stderr until the then
+        data = proc.stdout.read(CHUNK_SIZE)
+        if data != "": socket.send(data)
+        time.sleep(SAMPLE_RATE)        
+
     # Done, flush any remaining data
     data = proc.stdout.read()
     data += proc.stderr.read()
@@ -218,7 +234,7 @@ def update_configuration():
   # Store the configuration
   # We will read user names and passwords, our advertisement name
   # and our ips to listen on (only valid at start)
-  configuration= {"users":[],"hostname":None,"ips":[]} 
+  configuration= {"users":[],"hostname":None,"ips":[],"stderr":True} 
  
   if os.path.exists(CONFIG_FILE):
     # Read the contents of the file
@@ -238,6 +254,8 @@ def update_configuration():
         configuration["users"].append((line[1],line[2]))  
       elif line[0] == "ip":
         configuration["ips"].append(line[1])
+      elif line[0] == "disablestderr":
+        configuration["stderr"] = False
 
   # Reset the passwords
   ALLOWED_USERS.clear()
@@ -248,8 +266,11 @@ def update_configuration():
   return configuration
 
 def main():
+  global INITIAL_CONFIG
+
   # Get our initial configuration
   config = update_configuration()
+  INITIAL_CONFIG = config
   print "Configured with hostname:",config["hostname"]
   
   # Always respond on getmyip() as well
