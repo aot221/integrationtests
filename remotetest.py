@@ -77,7 +77,7 @@ def authenticate(socket, config):
 
 # Creates a tar file of the needed data
 def create_tar(config):
-  name = "files."+str(int(time.time()))+".tgz"
+  name = "files."+str(config["host"])+"."+str(int(time.time()))+".tgz"
   tar = tarfile.open(name,"w:gz")
   tar.add(config["dir"],arcname="")
   tar.close()
@@ -151,6 +151,12 @@ def main():
      exit()
 
   print "Configuration:",config 
+  
+  # Create a tar file, do first to avoid timeout
+  print "Creating tar file..."
+  tarfile = create_tar(config)
+  print "Created:",tarfile
+
   # Connect to the proper host
   print "Connecting..."
   socket = connect_to_host(config) 
@@ -162,11 +168,6 @@ def main():
     print "Authentication Failed!"
     exit()
   
-  # Create a tar file
-  print "Creating tar file..."
-  tarfile = create_tar(config)
-  print "Created:",tarfile
-
   # Upload the tar file
   print "Uploading tar file..."
   status = upload_tar(tarfile,socket)
