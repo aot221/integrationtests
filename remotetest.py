@@ -166,6 +166,7 @@ def main():
   auth = authenticate(socket, config)
   if not auth:
     print "Authentication Failed!"
+    os.remove(tarfile)
     exit()
   
   # Upload the tar file
