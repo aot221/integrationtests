@@ -10,6 +10,7 @@ import shutil
 import select
 from repyportability import *
 import repyhelper
+import nonportable
 
 # Get the advertisement methods
 repyhelper.translate_and_import("centralizedadvertise.repy")
@@ -114,7 +115,18 @@ def setup_environ(filecontents):
     os.chdir(originaldir)
  
   return tmpdir
-  
+
+
+# Helps stop the test
+def stoptest(socket,pid):
+  try:
+    mesg = socket.recv(8)
+    print "Incoming message:",mesg
+    if "cancel" in mesg:
+      nonportable.portablekill(pid)
+  except:
+    pass
+
 CHUNK_SIZE=512
 SAMPLE_RATE = 0.1
 
@@ -136,7 +148,11 @@ def run_test(arguments, tmpdir, socket):
 
     # Launch the process
     proc = subprocess.Popen("python "+arguments,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    
+    pid = proc.pid 
+   
+    # Setup a thread to check for an interrupt request
+    settimer(0, stoptest,(socket,pid))
+
     # Read the data from stdout and send it, timeout after 10 minutes
     while proc.poll() == None and time.time() - start < 600:
       # Enable stderr by default, disable on some systems (Windows)
@@ -170,9 +186,7 @@ def run_test(arguments, tmpdir, socket):
     proc.stderr.close()
 
     # Kill the process if it is still running
-    pid = proc.pid
     if proc.poll() == None:
-      import nonportable
       nonportable.portablekill(pid)
   
   finally:

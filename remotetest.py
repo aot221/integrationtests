@@ -7,6 +7,8 @@ import time
 import sys
 import os
 import repyhelper
+import signal
+import select
 
 # Get the advertisement methods
 repyhelper.translate_and_import("centralizedadvertise.repy")
@@ -102,17 +104,31 @@ def upload_tar(tarfilename, socket):
 CHUNKS = 512
 # Prints the results
 def dump_result(socket):
+  # Setup the interrupt handler
+  signal.signal(signal.SIGINT,interrupt)
   try:
     while True:
-      data = socket.recv(512)
-      if data == "":
-        break
-      sys.stdout.write(data)
-  except:
+      try:
+        data = socket.recv(512)
+        if data == "":
+          break
+        sys.stdout.write(data)
+      except select.error:
+        # This means we got a SIGINT...
+        pass
+  except Exception, e:
+    print "[remotetest.py] Exception:",type(e),e
     pass
     
+# When we catch a signal, send "cancel" to the remote server to stop the test  
+def interrupt(signum, stack):
+  global socket
+  socket.send("cancel")
+  print "[remotetest.py] Sent interrupt to remote host!"
 
 def main():
+  global socket
+
   # Parse the options
   options, args = getopt.getopt(sys.argv[1:], "", ["list","hostinfo=","user=","pass=","host=","dir=","args=","ip="])
   
@@ -183,6 +199,9 @@ def main():
   # Send the arguments
   print "Uploading arguments..."
   send_mess(socket, config["args"])
+
+  # Setup an interrupt handler, inform the user 
+  print "Setup interrupt handler on SIGINT to stop remote test."
 
   # Print the results
   print "Starting to dump result:"
