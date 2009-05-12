@@ -1,3 +1,18 @@
+"""
+Author: Armon Dadgar
+Date: Early May, 2009
+Description:
+
+  This script is meant to run on a server, and it serves as a seattle testbed.
+  The server will automatically advertise itself and wait for incoming connections.
+  Incoming connections are authenticated, and then a gzipped tar file is uploaded to the server.
+  The server will extract this to a temporary directory, and then chdir into the directory.
+  Finally, the client will upload some arguments. 'python ' is pre-pended to those arguments,
+  and then executed in the temporary directory. The server will then read the data from stdout and stderr,
+  and send it to the client. Once finished, the socket will be closed, the test process killed if necessary,
+  and the temporary directory deleted.
+
+"""
 
 import socket
 import time
@@ -28,6 +43,20 @@ AD_TTL = 120    # 2 minutes
 TESTBEDS = "SEATTLE_TESTBEDS" # Master advertisekey
 
 def get_message(socket, digits=4,status=False):
+  """
+  <Purpose>
+    Retrieves a full messsage from the socket. Each message is prepended with 'digits' number of digits,
+    which indicate the length of the proceding message.
+
+  <Arguments>
+    socket: A TCP socket
+    digits: Defaults to 4, the number of prepended digits to check for.
+    status: If true, it will print the bytes remaining to be downloaded.
+
+  <Returns>
+    The message.
+  """
+
   # Get the length of the user message
   length = int(socket.recv(digits))
   
@@ -47,6 +76,17 @@ def get_message(socket, digits=4,status=False):
   return message
 
 def authenticate_connection(socket):
+  """
+  <Purpose>
+    Authenticates the current connection. A username/password combo is transmitted to the server,
+    and we check against the ALLOWED_USERS dictionary to see if this is valid.
+
+  <Arguments>
+    socket: A TCP socket.
+
+  <Returns>
+    True if authenticated, False otherwise.
+  """
   # Get the user message
   message = get_message(socket)
 
@@ -67,6 +107,19 @@ def authenticate_connection(socket):
   return authenticated
 
 def get_file(socket):
+  """
+  <Purpose>
+    Downloads the gzipped tarfile from the client. The file is checked against its MD5 hash to check for a match.
+    * Limitation: The server will continue if the tarfile is corrupt, however the client is designed to terminate,
+    which will cause the server to terminate as well.
+
+  <Arguments>
+    socket: A TCP socket.
+
+  <Returns>
+    The contents of the gzipped tarfile.
+  """
+
   # Get the message
   message = get_message(socket, 8)
  
@@ -88,6 +141,17 @@ def get_file(socket):
   return actualmessage
 
 def setup_environ(filecontents):
+  """
+  <Purpose>
+    Setups a temporary directory to run the user test.
+
+  <Arguments>
+    The contents of the gzipped tarfile.
+
+  <Returns>
+    The full path to the temporary directory.
+  """
+
   # Create a temporary directory
   tmpdir = tempfile.mkdtemp()
   
@@ -119,6 +183,16 @@ def setup_environ(filecontents):
 
 # Helps stop the test
 def stoptest(socket,pid):
+  """
+  <Purpose>
+    Checks the socket for any incoming user messages while the test is running.
+    If the user sends 'cancel' to us, we will kill the running test.
+  
+  <Arguments>
+    socket: A TCP socket to read from
+    pid: The PID of the process to kill.
+  """
+
   try:
     mesg = socket.recv(8)
     print "Incoming message:",mesg
@@ -132,6 +206,21 @@ SAMPLE_RATE = 0.1
 
 # Run the test, streams results back to the user in chunks
 def run_test(arguments, tmpdir, socket):
+  """
+  <Purpose>
+    Runs the actual test while streaming the results back to the user.
+
+  <Arguments>
+    arguments: The command to executed, will be prepended with 'python '
+    tmpdir: The temporary directory which we should execute in
+    socket: A TCP socket to stream the results back on.
+
+  <Side Effects>
+    Launches a new process.
+
+  <Returns>
+    Nothing.
+  """
   global INITIAL_CONFIG
   enable_stderr = INITIAL_CONFIG["stderr"]
   
@@ -194,10 +283,35 @@ def run_test(arguments, tmpdir, socket):
 
 # Cleanup the state
 def cleanup_environ(tmpdir):
+  """
+  <Purpose>
+    Cleans up the test environment.
+
+  <Arguments>
+    tmpdir: The temporary directory
+  """
+
   # Remove everything
   shutil.rmtree(tmpdir, True)
 
 def connection_handler(remoteip, remoteport, socket, sockh, waith):
+  """
+  <Purpose>
+    Handles incoming connection attempts.
+    Processes requests in this order:
+    1) Authenticate the connection, exit on failure.
+    2) Download the tarfile
+    3) Setup the test environment
+    4) Download the test arguments
+    5) Start the test and stream the results.
+    6) Cleanup and close the socket.
+
+  <Arguments>
+    see waitforconn.
+
+  <Returns>
+    Nothing.
+  """
   # Try to handle the request. Log failures and always close the socket.
   try:
     # Check if the connection is authenticated
@@ -245,6 +359,41 @@ def connection_handler(remoteip, remoteport, socket, sockh, waith):
 
 # Updates server configuration, returns dictionary containing IP's, and hostnames
 def update_configuration():
+  """
+  <Purpose>
+    Reloads the server configuration.
+    Parses the server.cfg file and generates a configuration dictionary.
+    This function updates the ALLOWED_USERS dictionary when called.
+
+  <Notes>
+    The server configuration file is of the following format:
+    1) The first word on the line specifies the type of configuration.
+    1.a) Valid config directives: hostname, user, ip, disablestderr
+    2) hostname is followed after a space with the desired hostname of the server.
+    This should not contain any spaces. E.g. 'hostname test_machine'
+    3) The user directive is followed by 2 more 'words' a user name and a password
+    Each should not contain any spaces. E.g. "user test testpassword"
+    4) The ip directive tells the server what additional IP's to listen on.
+    The server will always listen to the IP from getmyip().
+    E.g. "ip 127.0.0.1"
+    5) The disablestderr directive is for OS's which cannot use select.select on file descriptors.
+    This is only applicable to Windows. What it does it only send stdout during run_test() and send
+    the stderr output after the test has terminated. This is necessary to avoid blocking while the test
+    is running.
+
+    6) Sample configuration file:
+    "
+    hostname testmachine
+    ip 127.0.0.1
+    ip 192.168.1.1
+    user test1 password1
+    user test2 password2
+    disablestderr
+    "
+
+  <Returns>
+    The configuration dictionary.
+  """
   global ALLOWED_USERS
   # Store the configuration
   # We will read user names and passwords, our advertisement name
@@ -282,6 +431,16 @@ def update_configuration():
   return configuration
 
 def main():
+  """
+  <Purpose>
+    It is the main function...
+    It will do the following:
+    1) Load the initial config, stored in INITIAL_CONFIG
+    2) Setup waitforconn on all 'ip' entries and getmyip()
+    3) Enter an infinite loop attempting to reload the configuration
+    and advertising every minute. Updated the config allows users to be removed,
+    added or updated while the server is running, without the need to stop.
+  """
   global INITIAL_CONFIG
 
   # Get our initial configuration

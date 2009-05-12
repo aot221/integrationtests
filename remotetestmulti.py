@@ -1,3 +1,12 @@
+"""
+Author: Armon Dadgar
+Date: Early May, 2009
+Description:
+
+  This is a simple wrapper around remotetest.py to allow running tests on multiple hosts concurrently.
+
+"""
+
 import subprocess
 import getopt
 import sys
@@ -7,6 +16,19 @@ import time
 SAMPLE=60
 
 def main():
+  """
+  <Purpose>
+    Runs remotetest.py on multiple hosts concurrently. Samples the test status and informs the user which
+    hosts are finished.Does the following:
+
+  1) Takes Almost the same options as remotetest.py. Does not take --ip, but takes multiple --host entries.
+  1.a) Optionally takes a --sample flag which changes its sample rate from 60 seconds to anything.
+  2) For each host, launch remotetest.py with the arguments we were passed, only giving 1 --host directive.
+  3) Redirect the output for each host to host.result.txt. E.g. --host attu -> attu.results.txt
+  4) Every SAMPLE seconds, defaults 60, checks the status of each host to see if it is still running,
+  prints output to the inform the user which hosts have finished, so that they can view the results.
+
+  """
   global SAMPLE
 
   # Parse the options
