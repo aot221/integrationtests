@@ -407,6 +407,10 @@ def update_configuration():
     fileh.close()
   
     for line in config:
+      # Determine if the line is blank or a comment, then skip it
+      if line.strip() == "" or line[0] == "#":
+        continue
+
       # Explode the configuration
       line = line.split()
       
