@@ -223,7 +223,9 @@ def run_test(arguments, tmpdir, socket):
   """
   global INITIAL_CONFIG
   enable_stderr = INITIAL_CONFIG["stderr"]
-  
+  path = INITIAL_CONFIG["path"]
+  use_shell = INITIAL_CONFIG["shell"]
+
   # Inform the user what is happening  
   if not enable_stderr:
     socket.send("NOTE: stderr will be deferred until program exits.\n")
@@ -236,7 +238,7 @@ def run_test(arguments, tmpdir, socket):
     start = time.time()
 
     # Launch the process
-    proc = subprocess.Popen("python "+arguments,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    proc = subprocess.Popen(path+" "+arguments,shell=use_shell,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     pid = proc.pid 
    
     # Setup a thread to check for an interrupt request
@@ -398,7 +400,7 @@ def update_configuration():
   # Store the configuration
   # We will read user names and passwords, our advertisement name
   # and our ips to listen on (only valid at start)
-  configuration= {"users":[],"hostname":None,"ips":[],"stderr":True} 
+  configuration= {"users":[],"hostname":None,"ips":[],"stderr":True,"path":"python","shell":True} 
  
   if os.path.exists(CONFIG_FILE):
     # Read the contents of the file
@@ -424,6 +426,11 @@ def update_configuration():
         configuration["ips"].append(line[1])
       elif line[0] == "disablestderr":
         configuration["stderr"] = False
+      elif line[0] == "path":
+        # Re-join the remainder of the line to form the path
+        configuration["path"] = " ".join(line[1:])
+      elif line[0] == "noshell":
+        configuration["shell"] = False
 
   # Reset the passwords
   new_allowed = {}
