@@ -45,7 +45,7 @@ from repyportability import *
 include centralizedadvertise.repy
 
 # list of people to notify by email on failure
-notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu"]
+notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu", "monzum@u.washington.edu"]
 
 # event for communicating when the lookup is done or timedout
 lookup_done_event = threading.Event()
