@@ -25,8 +25,7 @@ def main():
   """
   <Purpose>
     Deploys the centralizedputget.py along with all the files needed into a
-    single directory. If the directory already exists then only the new version
-    of centralizedputget.py is extracted into it.
+    single directory. The directory must already exist.
 
   <Exceptions>
     If OS is not Linux, then setting up crontab will not work.
