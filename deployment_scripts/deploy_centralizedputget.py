@@ -29,6 +29,10 @@ def main():
 
   <Exceptions>
     If OS is not Linux, then setting up crontab will not work.
+	
+  <Side Effect>
+    If the target directory that the user provides is not empty, then this script will delete all the files
+    that already exist in that directory.
 
   <Usage>
     make a folder that lies in the same directory as the trunk director and copy this file and setup_crontab.py in that file. Go to the trunk folder in the svn checkout directory and run the command: python preparetest.py <../folder_name>. Then copy over preparetest.py in that folder as well.  
@@ -111,7 +115,6 @@ def main():
     
     cron_line="0 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/centralizedputget.py > " + cron_log_dir + "/cron_log.centralizedputget" + os.linesep
 
-    print "i am here"
     #setup the cron job
     setup_crontab.add_crontab(cron_line, "centralizedputget")
     
