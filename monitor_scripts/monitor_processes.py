@@ -11,6 +11,7 @@
 """
 
 import subprocess
+import sys
 import send_gmail
 
 # the people to notify on failure/if anything goes wrong
@@ -128,16 +129,25 @@ def monitor_seattle():
     None
   """
 
+  monitor_process_list=['advertiseserver.py']
   #build up the generic command
-  command = "ps auwx | grep python | grep -v grep | grep cosmin| awk '{print $14}'"
+  command = "ps auwx | grep python | grep -v grep | grep geni| awk '{print $14}'"
   #command = 'ps auwx | grep python | grep -v grep | grep geni'
   
   #run a command on the linux machine to find all the relevant processes
   relevant_processes = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).stdout  
   
-  for line in relevant_processes:
-    print line
+  processes_string=""
   
+  #make a string of all the processes
+  for line in relevant_processes:
+    processes_string = processes_string+line
+  
+  for critical_process in monitor_process_lists:
+    if not critical_process in process_string:
+	  print 'warning warning'
+	else
+	  print success
 
   
 def main():
