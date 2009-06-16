@@ -13,6 +13,7 @@
 import subprocess
 import sys
 import send_gmail
+import irc_seattlebot
 
 # the people to notify on failure/if anything goes wrong
 notify_list = ["ivan@cs.washington.edu, justinc@cs.washington.edu", "monzum@u.washington.edu"]
@@ -117,7 +118,7 @@ def handle_exception(text):
 
 
 
-def monitor_seattle():
+def monitor_processes(monitor_process_list, command_list):
   """
   <Purpose>
     Checks to make sure that the critical processes on the machine 'seattle' are still running
@@ -125,31 +126,45 @@ def monitor_seattle():
   <Exceptions>
     None
 
+  <Arguments>
+    monitor_process_list - a list of all the critical processes that should be checked to 
+      see if they are up and running.
+
+    command_list - a list of all the commands required to find all the relevant processes
+
   <Return>
     None
   """
-
-  monitor_process_list=['advertiseserver.py']
-  #build up the generic command
-  command = "ps auwx | grep python | grep -v grep | grep geni| awk '{print $14}'"
-  #command = 'ps auwx | grep python | grep -v grep | grep geni'
   
-  #run a command on the linux machine to find all the relevant processes
-  relevant_processes = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).stdout  
-  
+  #string that holds the name of all the processes that are found to be running using the
+  #ps commands that was passed in as argument
   processes_string=""
   
-  #make a string of all the processes
-  for line in relevant_processes:
-    processes_string = processes_string+line
-  
-  for critical_process in monitor_process_lists:
-    if not critical_process in process_string:
-	  print 'warning warning'
-	else
-	  print success
+  #run a command on the linux machine to find all the relevant processes
+  for command in command_list:
+    relevant_processes = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).stdout  
 
+    #make a string of all the processes
+    for line in relevant_processes:
+      processes_string = processes_string+line
+ 
+  #keeps track to see if any processes are down 
+  critical_process_down=False
+  error_message="WARNING: Critical processes down! Seattle developers please start the processes up as soon as possible\n"
+  error_message=error_message+"Listing processes that are down:\n"
+
+  #goes through the list of monitor_process_list to ensure that all processes are running
+  for critical_process in monitor_process_list:
+    if not critical_process in processes_string:
+      critical_process_down=True
+      error_message = error_message+critical_process+" is down on seattle.cs.washington.edu\n"
   
+  error_message=error_message+"end of list of processes that are down.\n................................"
+  if critical_process_down:
+    #handle_exception(error_message)
+    irc_seattlebot.send_msg(error_message)
+
+
 def main():
   """
   <Purpose>
@@ -169,15 +184,30 @@ def main():
   """
   
   # setup the gmail user/password to use when sending email
-  success,explanation_str = send_gmail.init_gmail()
-  if not success:
-    log(explanation_str)
-    sys.exit(0)  
-	
+#  success,explanation_str = send_gmail.init_gmail()
+ # if not success:
+  #  log(explanation_str)
+   # sys.exit(0)  
+
+  #processes that should be running on seattle server
+  seattle_process_list=['advertiseserver.py', 'blah']	
+
+  #The commands that should be run on seattle to get all the required processes
+  seattle_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $14}'"]
+
+  #processes that should be running on seattlegeni server
+  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', 'canonicaltoonepercent_manyevents.py', 'dbnode_checker.py', 'apache2', 'mysqld']
+
+  #The commands that should be run on seattlegeni to get all the required processes  
+  seattlegeni_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $12}'"]
+  seattlegeni_command.append("ps auwx | grep apache | grep -v grep | grep root | awk '{print $11}'")
+  seattlegeni_command.append("ps auwx |grep mysqld |grep root | awk '{print $12}'")
+ 
+  #run monitor processes with the right command
   if sys.argv[1] == '-seattle':
-    monitor_seattle()
+    monitor_processes(seattle_process_list, seattle_command)
   elif sys.argv[1] == '-seattlegeni':
-    monitor_seattlegeni()
+    monitor_processes(seattlegeni_process_list, seattlegeni_command)
 
 	
 	
