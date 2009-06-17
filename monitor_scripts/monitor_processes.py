@@ -184,10 +184,10 @@ def main():
   """
   
   # setup the gmail user/password to use when sending email
-#  success,explanation_str = send_gmail.init_gmail()
- # if not success:
-  #  log(explanation_str)
-   # sys.exit(0)  
+  success,explanation_str = send_gmail.init_gmail()
+  if not success:
+    log(explanation_str)
+    sys.exit(0)  
 
   #processes that should be running on seattle server
   seattle_process_list=['advertiseserver.py']	
