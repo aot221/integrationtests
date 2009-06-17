@@ -56,7 +56,7 @@ def main():
     sys.argv = sys.argv[1:]
     checkArgs(cron_setup)
     log_dir = sys.argv[2]
-	setup_seattle=True
+    setup_seattle=True
     
     if not( os.path.isdir(log_dir) ):
       help_exit("given log_foldername is not a directory")
@@ -117,8 +117,8 @@ def main():
     cron_tab_dir=os.path.normpath(current_dir + "/" + target_dir)
     cron_log_dir=os.path.normpath(current_dir + "/" + log_dir)
     
-	#sets up different cron tab depending on which machine this deployment script is running on. specified by the option -cseattle and -cseattlegeni
-	if setup_seattle:
+    #sets up different cron tab depending on which machine this deployment script is running on. specified by the option -cseattle and -cseattlegeni
+    if setup_seattle:
       cron_line="*/15 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/monitor_processes.py -seattle > " + cron_log_dir + "/seattlecron_log.monitor_processes" + os.linesep
 	 
     elif setup_seattlegeni:
