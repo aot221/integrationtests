@@ -118,7 +118,7 @@ def handle_exception(text):
 
 
 
-def monitor_processes(monitor_process_list, command_list):
+def monitor_processes(monitor_process_list, command_list, machine_name):
   """
   <Purpose>
     Checks to make sure that the critical processes on the machine 'seattle' are still running
@@ -157,11 +157,12 @@ def monitor_processes(monitor_process_list, command_list):
   for critical_process in monitor_process_list:
     if not critical_process in processes_string:
       critical_process_down=True
-      error_message = error_message+critical_process+" is down on seattle.cs.washington.edu\n"
+      error_message = error_message+critical_process+" is down on "+machine_name+".cs.washington.edu\n"
   
   error_message=error_message+"end of list of processes that are down.\n................................"
+
   if critical_process_down:
-    #handle_exception(error_message)
+    handle_exception(error_message)
     irc_seattlebot.send_msg(error_message)
 
 
@@ -205,9 +206,9 @@ def main():
  
   #run monitor processes with the right command
   if sys.argv[1] == '-seattle':
-    monitor_processes(seattle_process_list, seattle_command)
+    monitor_processes(seattle_process_list, seattle_command, "seattle")
   elif sys.argv[1] == '-seattlegeni':
-    monitor_processes(seattlegeni_process_list, seattlegeni_command)
+    monitor_processes(seattlegeni_process_list, seattlegeni_command, "seattlegeni")
 
 	
 	
