@@ -190,7 +190,7 @@ def main():
    # sys.exit(0)  
 
   #processes that should be running on seattle server
-  seattle_process_list=['advertiseserver.py', 'blah']	
+  seattle_process_list=['advertiseserver.py']	
 
   #The commands that should be run on seattle to get all the required processes
   seattle_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $14}'"]
