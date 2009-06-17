@@ -46,13 +46,29 @@ def main():
   cron_setup = False
   log_dir = ""
 
-  # -c means we have to setup the crontab with a new cron job
-  if sys.argv[1] == '-c':
+  #variables that check which machine is being setup  
+  setup_seattle=False
+  setup_seattlegeni=False
+  
+  # -cseattle means we have to setup the crontab with a new cron job on the machine seattle
+  if sys.argv[1] == '-cseattle':
     cron_setup = True
     sys.argv = sys.argv[1:]
     checkArgs(cron_setup)
     log_dir = sys.argv[2]
+	setup_seattle=True
     
+    if not( os.path.isdir(log_dir) ):
+      help_exit("given log_foldername is not a directory")
+
+  # -cseattlegeni means we have to setup the crontab with a new cron job on the machine seattlegeni	  
+  elif sys.argv[1] == '-cseattlegeni':
+    cron_setup = True
+    sys.argv = sys.argv[1:]
+    checkArgs(cron_setup)
+    log_dir = sys.argv[2]
+    setup_seattlegeni=True    
+	
     if not( os.path.isdir(log_dir) ):
       help_exit("given log_foldername is not a directory")
 
@@ -101,8 +117,13 @@ def main():
     cron_tab_dir=os.path.normpath(current_dir + "/" + target_dir)
     cron_log_dir=os.path.normpath(current_dir + "/" + log_dir)
     
-    cron_line="*/15 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/monitor_processes.py > " + cron_log_dir + "/cron_log.monitor_processes" + os.linesep
-
+	#sets up different cron tab depending on which machine this deployment script is running on. specified by the option -cseattle and -cseattlegeni
+	if setup_seattle:
+      cron_line="*/15 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/monitor_processes.py -seattle > " + cron_log_dir + "/seattlecron_log.monitor_processes" + os.linesep
+	 
+    elif setup_seattlegeni:
+      cron_line="*/15 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/monitor_processes.py -seattlegeni > " + cron_log_dir + "/seattlecron_log.monitor_processes" + os.linesep
+	  
     #setup the cron job
     setup_crontab.add_crontab(cron_line, "monitor_processes")
     
@@ -113,7 +134,7 @@ def main():
 def checkArgs(cron=False):
 
   if cron and len(sys.argv) < 3:
-    help_exit("Invalid number of arguments with option -c, need <log_directory>")
+    help_exit("Invalid number of arguments with option -cseattle or -cseattlegeni, need <log_directory>")
     
   elif len(sys.argv) < 2:
     help_exit("Invalid number of arguments")
@@ -123,7 +144,7 @@ def checkArgs(cron=False):
 #exit program with a message and help menu
 def help_exit(exit_msg):
   print exit_msg
-  option_message = "Options:\n -c\tsetup crontab"
+  option_message = "Options:\n -cseattle\tsetup crontab for seattle.cs.washington.edu\n -cseattlegeni\tsetup crontab for seattlegeni.cs.washington.edu"
   print "python deploy_monitor_processes.py [option] <target_directory> [<log_directory>]"
   print option_message
   sys.exit(1)
