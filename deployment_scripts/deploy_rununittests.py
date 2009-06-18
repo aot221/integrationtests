@@ -96,7 +96,7 @@ def main():
     cron_tab_dir=os.path.normpath(current_dir + "/" + target_dir)
     cron_log_dir=os.path.normpath(current_dir + "/" + log_dir)
     
-    cron_line="45 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/rununittests.py > " + cron_log_dir + "/cron_log.rununittests" + os.linesep
+    cron_line="45 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/rununittests.py >> " + cron_log_dir + "/cron_log.rununittests 2>&1" + os.linesep
 
     #setup the cron job
     setup_crontab.add_crontab(cron_line, "rununittests")

@@ -122,7 +122,7 @@ def main():
       cron_line="*/15 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/monitor_processes.py -seattle > " + cron_log_dir + "/seattlecron_log.monitor_processes" + os.linesep
 	 
     elif setup_seattlegeni:
-      cron_line="*/15 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/monitor_processes.py -seattlegeni > " + cron_log_dir + "/seattlecron_log.monitor_processes" + os.linesep
+      cron_line="*/15 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python " + cron_tab_dir + "/monitor_processes.py -seattlegeni >> " + cron_log_dir + "/seattlecron_log.monitor_processes 2>&1" + os.linesep
 	  
     #setup the cron job
     setup_crontab.add_crontab(cron_line, "monitor_processes")
