@@ -86,8 +86,14 @@ def main():
 
   #copy necessary files over
   #an alternative to the copy_to_target code, is to manually copy these two files over
-  preparetest.copy_to_target("../trunk/nodemanager/timeout_xmlrpclib.py", target_dir)
-  preparetest.copy_to_target("../trunk/nodemanager/openDHTadvertise.py", target_dir)
+  preparetest.copy_to_target("../trunk/repy/*", target_dir)
+  preparetest.copy_to_target("../trunk/nodemanager/*", target_dir)
+  preparetest.copy_to_target("../trunk/portability/*", target_dir)
+  preparetest.copy_to_target("../trunk/seattlelib/*", target_dir)
+  preparetest.copy_to_target("../trunk/seash/*", target_dir)
+  preparetest.copy_to_target("../trunk/softwareupdater/*", target_dir)
+  preparetest.copy_to_target("../trunk/autograder/nm_remote_api.mix", target_dir)
+  preparetest.copy_to_target("../trunk/keydaemon/*", target_dir)
   
   #the next few lines is necessary unless the file is manually copied over
   preparetest.copy_to_target("../trunk/integrationtests/opendhtputget/*", target_dir)
