@@ -45,7 +45,7 @@ import traceback
 import send_gmail
 
 # path prefix where we will download and install seattle
-prefix="/home/seattle"
+prefix=os.getcwd()
 
 # the url from where we will fetch a linux version of seattle
 seattle_linux_url = "https://seattlegeni.cs.washington.edu/geni/download/seattle_install_tester/seattle_linux.tgz"
