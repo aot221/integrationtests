@@ -53,12 +53,10 @@ def send_msg(message_string):
   #wait for the connection to be made properly
   time.sleep(5)  
   
-  #send the message three times because its important
-  for i in range(0,3):
-    #send a message on the channel then quit the channel then quit irc
-    for line in message_string.split("\n"):
-      irc_connection.send("PRIVMSG "+CHANNEL+" :"+line+"\r\n")
-      time.sleep(1)
+  #send a message on the channel then quit the channel then quit irc
+  for line in message_string.split("\n"):
+    irc_connection.send("PRIVMSG "+CHANNEL+" :"+line+"\r\n")
+    time.sleep(1)
   
   irc_connection.send("PART "+CHANNEL+"\r\n")
   irc_connection.send("QUIT\r\n")
