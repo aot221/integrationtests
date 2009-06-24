@@ -101,7 +101,7 @@ def main():
   
   #change directory to the target directory and preprocess the *.mix files
   os.chdir(target_dir)
-  preparetest.process_mix("repypp.py")
+  preparetest.process_mix(current_dir+"/repypp.py")
   
 
   #check to see if cron setup was requested, if yes run cron_setup
