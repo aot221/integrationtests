@@ -8,6 +8,18 @@
 <Author>
   Monzur Muhammad
   monzum@u.washington.edu
+  
+<Purpose>
+  ping_machines.py should run once an hour on a crontab. Every machine that is involved in the Seattle project
+  is pinged to make sure that the machine is up and running. If any of the machine cannot be pinged, an email
+  is sent to the system admins and also a message is sent on the irc. If all the pings were successful then
+  a message is sent on the irc, once a day.
+  
+<Usage>
+  This file should run on a crontab such as this:
+  
+  25 * * * * export GMAIL_USER='seattle.devel@gmail.com' && export GMAIL_PWD='repyrepy' && /usr/bin/python
+  /home/integrationtester/cron_tests/ping_machines/ping_machines.py >> /home/integrationtester/cron_logs/cron_log.ping_machines 2>&1
 """
 
 
@@ -258,9 +270,10 @@ def main():
       ALL_MACHINES_RUNNING = False
       error_message += result+"\n"
 
-  #if all machines were pinged successfully, notify on irc
+  #if all machines were pinged successfully, notify on irc if option -m was used to run ping_machines.py
   if ALL_MACHINES_RUNNING:
-    irc_seattlebot.send_msg("The machines: "+str(machine_list)+" were pinged successfully")
+    if sys.argv[1] == '-m':
+      irc_seattlebot.send_msg("The machines: "+str(machine_list)+" were pinged successfully")
 
   else:
     handle_exception(error_message)
