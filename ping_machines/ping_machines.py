@@ -272,7 +272,7 @@ def main():
 
   #if all machines were pinged successfully, notify on irc if option -m was used to run ping_machines.py
   if ALL_MACHINES_RUNNING:
-    if len(sys.argv) >= 2 and sys.argv[1] == '-m'::
+    if len(sys.argv) >= 2 and sys.argv[1] == '-m':
       irc_seattlebot.send_msg("The machines: "+str(machine_list)+" were pinged successfully")
 
   else:
