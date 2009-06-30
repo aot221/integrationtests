@@ -14,6 +14,9 @@ import subprocess
 import sys
 import send_gmail
 import irc_seattlebot
+import traceback
+import time
+import socket
 
 # the people to notify on failure/if anything goes wrong
 notify_list = ["ivan@cs.washington.edu, justinc@cs.washington.edu", "monzum@u.washington.edu"]
@@ -162,7 +165,7 @@ def monitor_processes(monitor_process_list, command_list, machine_name):
   error_message=error_message+"end of list of processes that are down.\n................................"
 
   if critical_process_down:
-    handle_exception(error_message)
+    notify(error_message)
     irc_seattlebot.send_msg(error_message)
 
 
@@ -197,7 +200,7 @@ def main():
   seattle_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $14}'"]
 
   #processes that should be running on seattlegeni server
-  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', 'canonicaltoonepercent_manyevents.py', 'dbnode_checker.py', 'apache2', 'mysqld', 'geni_xmlrpc_server.py']
+  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', ' canonical_to_onepercentmanyevents.py', 'canonical_to_onepercentmanyevents.py', 'dbnode_checker.py', 'apache2', 'mysqld']
 
   #The commands that should be run on seattlegeni to get all the required processes  
   seattlegeni_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $12}'"]
