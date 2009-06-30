@@ -109,7 +109,7 @@ class ping(Thread):
         packets_received = int(packets_received[0])*100/self.pingcount
         result= "Pinging "+str(self.ipaddr)+": packets received "+str(packets_received)+"%"
         
-        print result
+        log(result)
 
         if packets_received == 0:
           self.result_queue.append((False,result))
@@ -240,7 +240,7 @@ def main():
     log(explanation_str)
     sys.exit(0)
 
-  print time.ctime() + " : pinging critical machines"
+  log("pinging critical machines")
 
   #list of machines thats getting pinged
   pinglist = []
@@ -272,7 +272,7 @@ def main():
 
   #if all machines were pinged successfully, notify on irc if option -m was used to run ping_machines.py
   if ALL_MACHINES_RUNNING:
-    if sys.argv[1] == '-m':
+    if len(sys.argv) >= 2 and sys.argv[1] == '-m'::
       irc_seattlebot.send_msg("The machines: "+str(machine_list)+" were pinged successfully")
 
   else:
