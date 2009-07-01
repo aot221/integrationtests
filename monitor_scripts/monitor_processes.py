@@ -142,7 +142,9 @@ def monitor_processes(monitor_process_list, command_list, machine_name):
   #string that holds the name of all the processes that are found to be running using the
   #ps commands that was passed in as argument
   processes_string=""
-  
+
+  log("Starting monitoring process on "+machine_name)  
+
   #run a command on the linux machine to find all the relevant processes
   for command in command_list:
     relevant_processes = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).stdout  
@@ -158,15 +160,24 @@ def monitor_processes(monitor_process_list, command_list, machine_name):
 
   #goes through the list of monitor_process_list to ensure that all processes are running
   for critical_process in monitor_process_list:
+    log("Checking process: "+critical_process+".......")
     if not critical_process in processes_string:
       critical_process_down=True
       error_message = error_message+critical_process+" is down on "+machine_name+".cs.washington.edu\n"
-  
+      print "FAIL"
+
+    else:
+      print "PASS"
   error_message=error_message+"end of list of processes that are down.\n................................"
 
   if critical_process_down:
     notify(error_message)
     irc_seattlebot.send_msg(error_message)
+
+  else:
+    log("All critical processes on "+machine_name+" are up and running")
+
+  print(".........................................................")
 
 
 def main():
@@ -200,7 +211,7 @@ def main():
   seattle_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $14}'"]
 
   #processes that should be running on seattlegeni server
-  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', ' canonical_to_onepercentmanyevents.py', 'canonical_to_onepercentmanyevents.py', 'dbnode_checker.py', 'apache2', 'mysqld']
+  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', 'canonical_to_onepercentmanyevents.py', 'canonical_to_onepercentmanyevents.py', 'dbnode_checker.py', 'apache2', 'mysqld']
 
   #The commands that should be run on seattlegeni to get all the required processes  
   seattlegeni_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $12}'"]
