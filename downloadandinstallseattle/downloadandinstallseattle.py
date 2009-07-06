@@ -43,6 +43,7 @@ import sys
 import traceback
 
 import send_gmail
+import integrationtestlib
 
 # path prefix where we will download and install seattle
 prefix=os.getcwd()
@@ -60,28 +61,7 @@ seattle_linux_url = "https://seattlegeni.cs.washington.edu/geni/download/seattle
 # onepercent_manyevents.publickey:
 onepercent_publickey_e = 100410155996328658394016174672712730146493471136460054943977610055010406541029967456210961113332433120911220994866027327246525018914945308813146095094266583446333536819644021403563644749883453501917642715769556118483161623360060413817439150957963107024505503830466865934362815594494856415719036027721190604347L
 
-# the people to notify on failure/if anything goes wrong
-notify_list = ["ivan@cs.washington.edu, justinc@cs.washington.edu", "monzum@u.washington.edu"]
 
-def log(msg):
-    """
-    <Purpose>
-       Prints a particularly formatted log msg to stdout
-
-    <Arguments>
-        msg, the text to print out
-
-    <Exceptions>
-        None.
-
-    <Side Effects>
-        Prints a line to stdout.
-
-    <Returns>
-        None.
-    """
-    print time.ctime() + " : " + msg
-    return
 
 def uninstall_remove():
     """
@@ -101,87 +81,13 @@ def uninstall_remove():
         None.
     """
     # uninstall
-    log("uninstalling")
+    integrationtestlib.log("uninstalling")
     os.system("cd " + prefix + "/seattle_repy/ && chmod +x ./uninstall.sh && ./uninstall.sh");
 
     # remove all traces
-    log("removing all files")
+    integrationtestlib.log("removing all files")
     os.system("rm -Rf " + prefix + "/seattle_repy/");
     os.system("rm -Rf " + prefix + "/seattle_linux.tgz")
-    return
-
-
-def notify(text):
-    """
-    <Purpose>
-       Send email with message body text to the members of the notify_list
-
-    <Arguments>
-        text, the text of the email message body to be generated
-
-    <Exceptions>
-        None.
-
-    <Side Effects>
-        Sends email.
-
-    <Returns>
-        None.
-    """
-    try:
-        hostname = socket.gethostname()
-    except:
-        hostname = "unknown host"
-    else:
-        try:
-            hostname = socket.gethostbyname_ex(hostname)[0]
-        except:
-            pass
-    subj = "seattle test failed @ " + hostname + " : " + sys.argv[0]
-    for emailaddr in notify_list:
-        log("notifying " + emailaddr)
-        send_gmail.send_gmail(emailaddr, subj, text, "")
-    return
-
-
-def handle_exception(text):
-    """
-    <Purpose>
-       Handles an exception with descriptive text.
-
-    <Arguments>
-        text, descriptive text to go along with a generated exception
-
-    <Exceptions>
-        None.
-
-    <Side Effects>
-        Logs the exception. Notifies people via email. Uninstalls Seattle and remove the Seattel dir.
-
-    <Returns>
-        None.
-    """
-    # log the exception
-    text = "Exception: " + text + "\n"
-    log(text)
-    text = "[" + time.ctime() + "]" + text
-    print '-'*60
-    traceback.print_exc(file=sys.stdout)
-    print '-'*60
-
-    # build the exception traceback string
-    error_type, error_value, trbk = sys.exc_info()
-    # use traceback max recursion depth of 6
-    tb_list = traceback.format_tb(trbk, 6)
-    exception_traceback_str = "Error: %s \nDescription: %s \nTraceback:" % (error_type.__name__, error_value)
-    for i in tb_list:
-        exception_traceback_str += "\n" + i
-    
-    # notify folks via email with the traceback of the exception
-    notify(text + exception_traceback_str)
-
-    # uninstall Seattle and remove its dir
-    uninstall_remove()
     return
 
 
@@ -202,11 +108,11 @@ def download_and_install():
     <Returns>
         None.
     """
-    log("downloading distro for seattle_install_tester...")
+    integrationtestlib.log("downloading distro for seattle_install_tester...")
     os.system("wget --no-check-certificate " + seattle_linux_url)
-    log("unpacking...")
+    integrationtestlib.log("unpacking...")
     os.system("tar -xzvf " + prefix + "/seattle_linux.tgz")
-    log("installing...")
+    integrationtestlib.log("installing...")
     os.system("cd " + prefix + "/seattle_repy/ && ./install.sh")
     return
 
@@ -231,18 +137,18 @@ def main():
     # setup the gmail user/password to use when sending email
     success,explanation_str = send_gmail.init_gmail()
     if not success:
-        log(explanation_str)
+        integrationtestlib.log(explanation_str)
         sys.exit(0)
 
     # download and install Seattle
     download_and_install()
 
     # sleep for a while, giving GENI time to process this new node
-    log("sleeping for 30 minutes...")
+    integrationtestlib.log("sleeping for 30 minutes...")
     time.sleep(1800)
     
     # retrieve the vesseldict from installed seattle
-    log("retrieving vesseldict from installed Seattle")
+    integrationtestlib.log("retrieving vesseldict from installed Seattle")
     dict = {}
     try:
         f=open(prefix + "/seattle_repy/vesseldict", "r")
@@ -250,30 +156,34 @@ def main():
         f.close()
         dict = eval(lines[0])
     except:
-        handle_exception("failed to open/read/eval vesseldict file")
+        integrationtestlib.handle_exception("failed to open/read/eval vesseldict file")
+        # uninstall Seattle and remove its dir
+        uninstall_remove()
         sys.exit(0)
 
     # check if the vesseldict conforms to expectations
-    log("checking for onepercent pubkey in vessels..")
+    integrationtestlib.log("checking for onepercent pubkey in vessels..")
     passed = False
     try:
         for vname, vdata in dict.items():
             for k in vdata['userkeys']:
                 if k['e'] == onepercent_publickey_e:
-                    log("passed")
+                    integrationtestlib.log("passed")
                     passed = True
                     break
             if passed:
                 break
     except e:
-        handle_exception("failed in checking for onepercent key\n\nvesseldict is: " + str(dict))
+        integrationtestlib.handle_exception("failed in checking for onepercent key\n\nvesseldict is: " + str(dict))
+        # uninstall Seattle and remove its dir
+        uninstall_remove()
         sys.exit(0)
 
     # if vesseldict not as expected, notify some people
     if not passed:
         text = "check for onepercent key:\n" + str(onepercent_publickey_e) + "..\n\nfailed\n\nvesseldict is: " + str(dict)
-        log(text)
-        notify(text)
+        integrationtestlib.log(text)
+        integrationtestlib.notify(text)
     
     # uninstall Seattle and remove its dir
     uninstall_remove()

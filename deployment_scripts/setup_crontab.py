@@ -65,11 +65,11 @@ def add_crontab(crontab_line, cron_name):
     raise UnsupportedOSError
 
  
-  crontab_current = subprocess.Popen("crontab -l", shell=True, stdout=subprocess.PIPE).stdout
+  crontab_current, crontab_error = subprocess.Popen("crontab -l", shell=True, stdout=subprocess.PIPE).communicate()
 
  
   #creates a temporary file to hold all the current cronjobs
-  temp_cronfile, temp_filename = tempfile.mkstemp("temp", "crontab")
+  temp_cronfd, temp_filename = tempfile.mkstemp("temp", "crontab")
 
   #check to see if the job is already in the crontab
   #if the job exists then close all files and raise an exception
@@ -77,15 +77,15 @@ def add_crontab(crontab_line, cron_name):
   for line in crontab_current:
     if re.search(cron_name, line):
       crontab_current.close()
-      os.close(temp_cronfile)
+      os.close(temp_cronfd)
       os.unlink(temp_filename)
       raise PreviousCronJobExists
     else:
-      os.write(temp_cronfile, line)
+      os.write(temp_cronfd, line)
 
   #add the new line to the cron tab, the line that was provided by the user
-  os.write(temp_cronfile, crontab_line) 
-  os.close(temp_cronfile)
+  os.write(temp_cronfd, crontab_line) 
+  os.close(temp_cronfd)
 
   #replace the old crontab with the crontab that was created
   #in the temporary file.

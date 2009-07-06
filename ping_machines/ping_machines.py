@@ -30,6 +30,7 @@ import socket
 import subprocess
 import send_gmail
 import irc_seattlebot
+import integrationtestlib
 import re
 from threading import Thread
 
@@ -37,8 +38,6 @@ from threading import Thread
 #list of critical machines that should be always up and running 
 machine_list = ["seattle.cs.washington.edu", "seattlegeni.cs.washington.edu", "blackbox.cs.washington.edu", "testbed-xp2.cs.washington.edu", "testbed-freebsd.cs.washington.edu", "testbed-opensuse.cs.washington.edu", "testbed-mac.cs.washington.edu"]
 
-# the people to notify on failure/if anything goes wrong
-notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu", "monzum@u.washington.edu"]
 
 
 #Exception if an unknown hostname is pinged
@@ -93,7 +92,7 @@ class ping(Thread):
 
     #pings the machine and gets the result line back  
     command = ("ping -q -c"+str(self.pingcount)+"  "+self.ipaddr, "r")
-    pingresult = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).stdout
+    pingresult, pingerror = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).communicate()
     
     #stay in a while loop while the ping result isn't ready
     while True:
@@ -109,113 +108,12 @@ class ping(Thread):
         packets_received = int(packets_received[0])*100/self.pingcount
         result= "Pinging "+str(self.ipaddr)+": packets received "+str(packets_received)+"%"
         
-        log(result)
+        integrationtestlib.log(result)
 
         if packets_received == 0:
           self.result_queue.append((False,result))
         else:
           self.result_queue.append((True,result)) 
-
-
-
-
-def log(msg):
-  """
-  <Purpose>
-    Prints a particularly formatted log msg to stdout
-
-  <Arguments>
-    msg, the text to print out
-
-  <Exceptions>
-    None.
-
-  <Side Effects>
-    Prints a line to stdout.
-
-  <Returns>
-    None.
-  """
-  print time.ctime() + " : " + msg
-  return
-
-
-  
-def notify(text):
-  """
-  <Purpose>
-    Send email with message body text to the members of the notify_list
-
-  <Arguments>
-    text, the text of the email message body to be generated
-
-  <Exceptions>
-    None.
-
-  <Side Effects>
-    Sends email.
-
-  <Returns>
-    None.
-  """
-  try:
-    hostname = socket.gethostname()
-  except:
-    hostname = "unknown host"
-  else:
-    try:
-      hostname = socket.gethostbyname_ex(hostname)[0]
-    except:
-      pass
-  subj = "critical seattle machines down @ " + hostname + " : " + sys.argv[0]
-  
-  for emailaddr in notify_list:
-    log("notifying " + emailaddr)
-    send_gmail.send_gmail(emailaddr, subj, text, "")
-    
-  return
-
-  
-  
-def handle_exception(text):
-  """
-  <Purpose>
-    Handles an exception with descriptive text.
-
-  <Arguments>
-    text, descriptive text to go along with a generated exception
-
-  <Exceptions>
-    None.
-
-  <Side Effects>
-    Logs the exception. Notifies people via email. Uninstalls Seattle and remove the Seattel dir.
-
-  <Returns>
-    None.
-  """
-  # log the exception
-  text = "Exception: " + text + "\n"
-  log(text)
-  text = "[" + time.ctime() + "]" + text
-  print '-'*60
-  traceback.print_exc(file=sys.stdout)
-  print '-'*60
-
-  # build the exception traceback string
-  error_type, error_value, trbk = sys.exc_info()
-  # use traceback max recursion depth of 6
-  tb_list = traceback.format_tb(trbk, 6)
-  exception_traceback_str = "Error: %s \nDescription: %s \nTraceback:" % (error_type.__name__, error_value)
-  for i in tb_list:
-    exception_traceback_str += "\n" + i
-    
-  # notify folks via email with the traceback of the exception
-  notify(text + exception_traceback_str)
-
-  # uninstall Seattle and remove its dir
-  uninstall_remove()
-  return
 
 
 
@@ -237,10 +135,10 @@ def main():
   # setup the gmail user/password to use when sending email
   success,explanation_str = send_gmail.init_gmail()
   if not success:
-    log(explanation_str)
+    integrationtestlib.log(explanation_str)
     sys.exit(0)
 
-  log("pinging critical machines")
+  integrationtestlib.log("pinging critical machines")
 
   #list of machines thats getting pinged
   pinglist = []
@@ -276,7 +174,7 @@ def main():
       irc_seattlebot.send_msg("The machines: "+str(machine_list)+" were pinged successfully")
 
   else:
-    handle_exception(error_message)
+    integrationtestlib.notify(error_message)
     irc_seattlebot.send_msg(error_message) 
 
     
