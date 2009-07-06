@@ -148,9 +148,9 @@ def main():
 
   #create a thread for each machine and ping them
   for host in machine_list:
-    current_machine = ping(str(host), result_queue)
-    pinglist.append(current_machine)
-    current_machine.start()
+    ping_current_machine = ping(str(host), result_queue)
+    pinglist.append(ping_current_machine)
+    ping_current_machine.start()
 
   #join all the threads
   for ping_host in pinglist:
@@ -163,10 +163,10 @@ def main():
 
   #check to see if all the results were successful
   #on failures notify the admins and send a message to the irc
-  for (success, result) in result_queue:
+  for (success, ping_result) in result_queue:
     if not success:
       ALL_MACHINES_RUNNING = False
-      error_message += result+"\n"
+      error_message += ping_result+"\n"
 
   #if all machines were pinged successfully, notify on irc if option -m was used to run ping_machines.py
   if ALL_MACHINES_RUNNING:

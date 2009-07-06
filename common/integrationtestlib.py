@@ -24,6 +24,9 @@ import traceback
 import time
 import socket
 
+# the people to notify on failure/if anything goes wrong
+notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu", "monzum@u.washington.edu"]
+
 
 
 def log(msg):
