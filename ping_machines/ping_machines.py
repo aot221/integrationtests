@@ -36,7 +36,7 @@ from threading import Thread
 
 
 #list of critical machines that should be always up and running 
-machine_list = ["seattle.cs.washington.edu", "seattlegeni.cs.washington.edu", "blackbox.cs.washington.edu", "testbed-xp2.cs.washington.edu", "testbed-freebsd.cs.washington.edu", "testbed-opensuse.cs.washington.edu", "testbed-mac.cs.washington.edu"]
+machine_list = ["seattle.cs.washington.edu", "seattlegeni.cs.washington.edu", "blackbox.cs.washington.edu", "testbed-xp2.cs.washington.edu", "testbed-freebsd.cs.washington.edu", "testbed-opensuse.cs.washington.edu", "testbed-mac.cs.washington.edu", "blah.sc.washington.edu"]
 
 
 
@@ -88,22 +88,21 @@ class ping(Thread):
     try:
       socket.gethostbyname(self.ipaddr)
     except:
+      self.result_queue.append((False, "The machine/ipaddr: "+self.ipaddr+" does not exist:"))
       raise MachineDoesNotExist, "The hostname/ipaddr "+self.ipaddr+" does not exist"
-
+      
     #pings the machine and gets the result line back  
     command = ("ping -q -c"+str(self.pingcount)+"  "+self.ipaddr, "r")
     pingresult, pingerror = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE).communicate()
-    
-    #stay in a while loop while the ping result isn't ready
-    while True:
-      ping_line = pingresult.readline()
- 
-      #break when the ping is over
-      if not ping_line:
-        break
+
+    #splits up the result in order to analyze the result
+    pingresult_formatted=pingresult.split('\n')
+
+    #Go through the result and pick out the right line to analyze
+    for ping_line in pingresult_formatted:
 
       packets_received=re.findall(r"(\d) received", ping_line)
-      
+
       if packets_received:
         packets_received = int(packets_received[0])*100/self.pingcount
         result= "Pinging "+str(self.ipaddr)+": packets received "+str(packets_received)+"%"

@@ -74,14 +74,14 @@ def add_crontab(crontab_line, cron_name):
   #check to see if the job is already in the crontab
   #if the job exists then close all files and raise an exception
   #else take the current line from the cron tab and add it to the temporary file
-  for line in crontab_current:
+  for line in crontab_current.split('\n'):
     if re.search(cron_name, line):
       crontab_current.close()
       os.close(temp_cronfd)
       os.unlink(temp_filename)
       raise PreviousCronJobExists
     else:
-      os.write(temp_cronfd, line)
+      os.write(temp_cronfd, line+os.linesep)
 
   #add the new line to the cron tab, the line that was provided by the user
   os.write(temp_cronfd, crontab_line) 
@@ -89,7 +89,7 @@ def add_crontab(crontab_line, cron_name):
 
   #replace the old crontab with the crontab that was created
   #in the temporary file.
-  os.popen("crontab '" + temp_filename + "'")
+  subprocess.Popen("crontab '" + temp_filename + "'", shell=True, stdout=subprocess.PIPE).communicate()
 
   #unlink and release the tempfile
   os.unlink(temp_filename)

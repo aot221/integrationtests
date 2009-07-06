@@ -23,6 +23,7 @@ import send_gmail
 import traceback
 import time
 import socket
+import sys
 
 # the people to notify on failure/if anything goes wrong
 notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu", "monzum@u.washington.edu"]

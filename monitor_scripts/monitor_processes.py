@@ -54,9 +54,8 @@ def monitor_processes(monitor_process_list, command_list, machine_name):
       sys.exit(1)
 
     #make a string of all the processes
-    for line in relevant_processes:
-      processes_string = processes_string+line
- 
+    processes_string = processes_string+relevant_processes
+  print processes_string 
   #keeps track to see if any processes are down 
   critical_process_down=False
   error_message="WARNING: Critical processes down! Seattle developers please start the processes up as soon as possible\n"
