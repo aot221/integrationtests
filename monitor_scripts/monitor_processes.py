@@ -120,7 +120,7 @@ def main():
   seattlegeni_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $12}'"]
   seattlegeni_command.append("ps auwx | grep apache | grep -v grep | grep root | awk '{print $11}'")
   seattlegeni_command.append("ps auwx |grep mysqld |grep root | awk '{print $12}'")
-  seattlegeni_command.append("ps auwx | grep python | grep -v grep | grep justinc | awk '{print $12}'"
+  seattlegeni_command.append("ps auwx | grep python | grep -v grep | grep justinc | awk '{print $12}'")
  
   #run monitor processes with the right command
   if sys.argv[1] == '-seattle':
