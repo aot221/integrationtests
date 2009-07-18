@@ -114,7 +114,7 @@ def main():
   seattle_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $14}'"]
 
   #processes that should be running on seattlegeni server
-  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', 'canonical_to_onepercentmanyevents.py', 'onepercentmanyevents_to_onepercentmanyevents.py', 'geni_xmlrpc_server.py', 'dbnode_checker.py', 'apache2', 'mysqld']
+  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', 'canonical_to_onepercentmanyevents.py', 'onepercentmanyevents_to_onepercentmanyevents.py', 'geni_xmlrpc_server.py', 'dbnode_checker.py', 'apache2', 'mysqld', 'backend.py']
 
   #The commands that should be run on seattlegeni to get all the required processes  
   seattlegeni_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $12}'"]
