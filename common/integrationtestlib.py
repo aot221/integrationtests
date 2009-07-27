@@ -29,7 +29,6 @@ import sys
 notify_list = ["ivan@cs.washington.edu", "justinc@cs.washington.edu", "monzum@u.washington.edu"]
 
 
-
 def log(msg):
   """
   <Purpose>
@@ -52,7 +51,7 @@ def log(msg):
   
   
   
-def notify(text):
+def notify(text, subject):
   """
   <Purpose>
     Send email with message body text to the members of the notify_list
@@ -78,17 +77,17 @@ def notify(text):
       hostname = socket.gethostbyname_ex(hostname)[0]
     except:
       pass
-  subj = "seattle critical process down @ " + hostname + " : " + sys.argv[0]
+  subject = subject + " @ "+ hostname + " : " + sys.argv[0]
   
   for emailaddr in notify_list:
     log("notifying " + emailaddr)
-    send_gmail.send_gmail(emailaddr, subj, text, "")
+    send_gmail.send_gmail(emailaddr, subject, text, "")
 	
   return
 
   
   
-def handle_exception(text):
+def handle_exception(text, subject):
   """
   <Purpose>
     Handles an exception with descriptive text.
@@ -122,7 +121,7 @@ def handle_exception(text):
     exception_traceback_str += "\n" + i
     
   # notify folks via email with the traceback of the exception
-  notify(text + exception_traceback_str)
+  notify(text + exception_traceback_str, subject)
 
   # uninstall Seattle and remove its dir
   uninstall_remove()
