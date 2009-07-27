@@ -18,8 +18,7 @@ import integrationtestlib
 
 # use repy helper to bring in advertise.repy
 import repyhelper
-
-
+repyhelper.translate_and_import('advertise.repy')
 
 def main():
   # initialize the gmail module
@@ -28,8 +27,8 @@ def main():
     integrationtestlib.log(explanation_str)
     sys.exit(0)
 
-  # use repy helper to bring in advertise.repy
-  repyhelper.translate_and_import('advertise.repy')
+
+ 
   
   # verify that there are at least 8 time servers running
   servers = centralizedadvertise_lookup("time_server")
