@@ -48,7 +48,7 @@ def main():
 
   diff = max(times) - min(times)
   if diff > (test_stop1 - test_start):  
-    print 'WARNING large descrepancy between times: '+str(diff)
+    integrationtestlib.log('WARNING large descrepancy between times: '+str(diff))
     fail_test('WARNING large descrepancy between times: '+str(diff))
     
   
@@ -61,7 +61,7 @@ def main():
   test_stop2 = getruntime()
 
   if ntp_t > (1 + test_stop2 - test_stop1)+max(times):
-    print 'WARING large descrepancy between ntp and tcp times'
+    integrationtestlib.log('WARING large descrepancy between ntp and tcp times')
     fail_test('WARNING large descrepancy between times: '+str(diff))
 
 
@@ -69,7 +69,7 @@ def main():
 
 def fail_test(err_str):
   # notify uses that this test has failed
-  integrationtestlib.notify('WARNING: test_time_tcp.py  FAILED, only '+err_str)
+  integrationtestlib.notify('WARNING: test_time_tcp.py  FAILED, only '+err_str, "test_time_tcp test failed")
   sys.exit()
 
 

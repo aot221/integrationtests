@@ -33,9 +33,9 @@ def main():
   # verify that there are at least 8 time servers running
   servers = centralizedadvertise_lookup("time_server")
   if len(servers) < 8:
-    print 'WARNING: only '+str(len(servers))+' timeservers are running!'
+    integrationtestlib.log('WARNING: only '+str(len(servers))+' timeservers are running!')
     
-    integrationtestlib.notify('WARNING: test_time_servers_running.py FAILED, only '+str(len(servers))+' timeservers are running!')
+    integrationtestlib.notify('WARNING: test_time_servers_running.py FAILED, only '+str(len(servers))+' timeservers are running!', "test_time_servers_running test failed")
 
 
 if __name__ == '__main__':
