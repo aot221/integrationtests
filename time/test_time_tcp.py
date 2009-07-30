@@ -30,6 +30,7 @@ def main():
     sys.exit(0)
 
     
+  integrationtestlib.log("Starting test_time_tcp.py...")  
   
   # get the time 5 times and make sure they are reasonably close
   test_start = getruntime()
@@ -64,6 +65,8 @@ def main():
     integrationtestlib.log('WARING large descrepancy between ntp and tcp times')
     fail_test('WARNING large descrepancy between times: '+str(diff))
 
+  integrationtestlib.log("Finished running test_time_tcp.py..... Test Passed")
+  print "......................................................\n"
 
 
 
