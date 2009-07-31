@@ -27,8 +27,9 @@ def main():
     integrationtestlib.log(explanation_str)
     sys.exit(0)
 
-
- 
+  #add Eric Kimbrel to the email notify list
+  integrationtestlib.notify_list.append("lekimbrel@gmail.com")
+  
   integrationtestlib.log("Looking up time_servers")  
 
   # verify that there are at least 8 time servers running

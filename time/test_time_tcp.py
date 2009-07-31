@@ -29,6 +29,8 @@ def main():
     integrationtestlib.log(explanation_str)
     sys.exit(0)
 
+  #add Eric Kimbrel to the email notify list
+  integrationtestlib.notify_list.append("lekimbrel@gmail.com")
     
   integrationtestlib.log("Starting test_time_tcp.py...")  
   
