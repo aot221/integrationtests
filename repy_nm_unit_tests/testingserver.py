@@ -15,6 +15,7 @@ Description:
 """
 
 import socket
+import sys
 import time
 import subprocess
 import tarfile
