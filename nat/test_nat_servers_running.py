@@ -51,14 +51,15 @@ def main():
   try:
     response = nat_check_bi_directional(getmyip(),55000) 
   except:
-    response = None:
+    response = None
 
   if response != True and response != False:
     integrationtestlib.log('WARNING: nat forwarders appear un-responsive')
 
     integrationtestlib.notify('WARNING: test_nat_servers_running.py FAILED, nat forwarders did not respond')
     
-
+  integrationtestlib.log("Finished running nat_tests")
+  print "------------------------------------------------------------"
 
 
 if __name__ == '__main__':
