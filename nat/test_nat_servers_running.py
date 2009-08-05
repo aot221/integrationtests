@@ -41,7 +41,7 @@ def main():
   if len(nodes) < 10:
     integrationtestlib.log('WARNING: only '+str(len(nodes))+' forwarders are running!')
     
-    integrationtestlib.notify('WARNING: test_nat_servers_running.py FAILED, only '+str(len(servers))+' nat forwarders are running!')
+    integrationtestlib.notify('WARNING: test_nat_servers_running.py FAILED, only '+str(len(nodes))+' nat forwarders are running!')
 
 
 
