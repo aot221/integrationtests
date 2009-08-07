@@ -31,6 +31,9 @@ def main():
   #add Eric Kimbrel to the email notify list
   integrationtestlib.notify_list.append("lekimbrel@gmail.com")
   
+  notify_str =''
+
+
   # PART 1 verify that there are at least 10 nat forwarders running
   integrationtestlib.log("Looking up nat forwarders")  
   try:
@@ -41,22 +44,20 @@ def main():
   if len(nodes) < 10:
     integrationtestlib.log('WARNING: only '+str(len(nodes))+' forwarders are running!')
     
-    integrationtestlib.notify('WARNING: test_nat_servers_running.py FAILED, only '+str(len(nodes))+' nat forwarders are running!','nat test fail notice')
-
-
+    notify_str += 'WARNING: test_nat_servers_running.py FAILED, only '+str(len(nodes))+' nat forwarders are running!'
 
 
   # PART 2 check that nat forwarders are responsive
   integrationtestlib.log("Checking that we can talk to a nat forwarder")  
   try:
     response = nat_check_bi_directional(getmyip(),55000) 
-  except:
-    response = None
-
-  if response != True and response != False:
+  except Exception, e:
+    notify_str += 'WARNING: test_nat_servers_running.py FAILED, nat forwarders did not respond: '+str(e)
+  
     integrationtestlib.log('WARNING: nat forwarders appear un-responsive')
 
-    integrationtestlib.notify('WARNING: test_nat_servers_running.py FAILED, nat forwarders did not respond','nat test fail notice')
+  if notify_str != '':
+    integrationtestlib.notify(notify_str,'nat test fail notice')
     
   integrationtestlib.log("Finished running nat_tests")
   print "------------------------------------------------------------"
