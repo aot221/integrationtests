@@ -29,6 +29,9 @@ def main():
     integrationtestlib.log(explanation_str)
     sys.exit(0)
 
+
+  notify_str = ''
+
   #add Eric Kimbrel to the email notify list
   integrationtestlib.notify_list.append("lekimbrel@gmail.com")
     
@@ -47,12 +50,12 @@ def main():
 
   
   if len(times) < 4:  # more than one attempt failed
-    fail_test('failed to get ntp time via tcp at least twice in 5 attempts')
+    notify_str += 'failed to get ntp time via tcp at least twice in 5 attempts'
 
   diff = max(times) - min(times)
   if diff > (test_stop1 - test_start):  
-    integrationtestlib.log('WARNING large descrepancy between times: '+str(diff))
-    fail_test('WARNING large descrepancy between times: '+str(diff))
+    integrationtestlib.log('WARNING large descrepancy between tcp times: '+str(diff))
+    notify_str += ' WARNING large descrepancy between tcp times: '+str(diff)
     
   
   try:
@@ -62,20 +65,20 @@ def main():
     fail_test(str(e))
   
   test_stop2 = getruntime()
-
-  if ntp_t > (1 + test_stop2 - test_stop1)+max(times):
+  diff = ntp_t - max(times)
+  if diff > (2 + test_stop2 - test_stop1):
+    exceedby = diff - (test_stop2-test_stop1)
     integrationtestlib.log('WARING large descrepancy between ntp and tcp times')
-    fail_test('WARNING large descrepancy between times: '+str(diff))
+    notify_str += ' WARNING large descrepancy between ntp and tcp time: '+str(exceedby)
 
-  integrationtestlib.log("Finished running test_time_tcp.py..... Test Passed")
+  
+  if notify_str != '':
+    integrationtestlib.notify(notify_str, "test_time_tcp test failed")  
+  else:
+    integrationtestlib.log("Finished running test_time_tcp.py..... Test Passed")
   print "......................................................\n"
 
-
-
-def fail_test(err_str):
-  # notify uses that this test has failed
-  integrationtestlib.notify('WARNING: test_time_tcp.py  FAILED, only '+err_str, "test_time_tcp test failed")
-  sys.exit()
+  
 
 
 if __name__ == '__main__':
