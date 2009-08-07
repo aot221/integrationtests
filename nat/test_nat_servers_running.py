@@ -16,6 +16,8 @@
 import sys
 import send_gmail
 import integrationtestlib
+import random
+
 
 # use repy helper to bring in advertise.repy
 import repyhelper
@@ -50,11 +52,11 @@ def main():
   # PART 2 check that nat forwarders are responsive
   integrationtestlib.log("Checking that we can talk to a nat forwarder")  
   try:
-    response = nat_check_bi_directional(getmyip(),55000) 
+    response = nat_check_bi_directional(getmyip(),random.randint(20000,62000))
   except Exception, e:
-    notify_str += 'WARNING: test_nat_servers_running.py FAILED, nat forwarders did not respond: '+str(e)
+    notify_str += 'WARNING: could not a get a response from nat forwarders: '+str(e)
   
-    integrationtestlib.log('WARNING: nat forwarders appear un-responsive')
+    integrationtestlib.log('WARNING: could not get a response from nat forwarders '+str(e))
 
   if notify_str != '':
     integrationtestlib.notify(notify_str,'nat test fail notice')
