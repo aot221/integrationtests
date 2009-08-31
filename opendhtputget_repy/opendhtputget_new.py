@@ -69,7 +69,7 @@ def lookup_timedout():
         None.
     """
     integrationtestlib.log("in lookup_timedout()")
-    notify_msg = "OpenDHT lookup failed -- lookup_timedout() fired after 30 minutes."
+    notify_msg = "OpenDHT lookup failed -- lookup_timedout() fired after 60 seconds."
     subject = "opendht with repy test failed"    
 
     # wait for the event to be set, timeout after 30 minutes
@@ -121,22 +121,22 @@ def main():
     # put(key,value) with ttlval into OpenDHT
     integrationtestlib.log("calling openDHTadvertise_announce(key: " + str(key) + ", val: " + str(value) + ", ttl: " + str(ttlval) + ")")
     try:
-        openDHTadvertise_announce(key,value,ttlval)
+        openDHTadvertise_announce(key, value, ttlval, proxiestocheck = 10)
     except:
         message = "openDHTadvertise_lookup() failed.\nFailed while doing openDHTadvertise_announce(). "
         message = message + "Anouncing with key: " + key + ", value: " + value + ", ttlval: " + ttlval
         integrationtestlib.handle_exception("openDHTadvertise_announce() failed", subject)
         sys.exit(0)
 
-    # a 30 second timer to email the notify_list on slow lookups
-    lookup_timedout_timer = threading.Timer(30, lookup_timedout)
+    # a 60 second timer to email the notify_list on slow lookups
+    lookup_timedout_timer = threading.Timer(60, lookup_timedout)
     # start the lookup timer
     lookup_timedout_timer.start()
 
     # get(key) from OpenDHT
     integrationtestlib.log("calling openDHTadvertise_lookup(key: " + str(key) + ")")
     try:
-        ret_value = openDHTadvertise_lookup(key)
+        ret_value = openDHTadvertise_lookup(key, proxiestocheck = 10)
         # TODO: check the return value as well
         # ret_value = int(ret_value[0])
     except:
