@@ -26,7 +26,7 @@ import shutil
 import select
 from repyportability import *
 import repyhelper
-import nonportable
+import harshexit
 
 # Get the advertisement methods
 repyhelper.translate_and_import("centralizedadvertise.repy")
@@ -198,7 +198,7 @@ def stoptest(socket,pid):
     mesg = socket.recv(8)
     print "Incoming message:",mesg
     if "cancel" in mesg:
-      nonportable.portablekill(pid)
+      harshexit.portablekill(pid)
   except:
     pass
 
@@ -279,7 +279,7 @@ def run_test(arguments, tmpdir, socket):
 
     # Kill the process if it is still running
     if proc.poll() == None:
-      nonportable.portablekill(pid)
+      harshexit.portablekill(pid)
   
   finally:
     os.chdir(originaldir)  
