@@ -82,11 +82,11 @@ def uninstall_remove():
     """
     # uninstall
     integrationtestlib.log("uninstalling")
-    os.system("cd " + prefix + "/seattle_repy/ && chmod +x ./uninstall.sh && ./uninstall.sh");
+    os.system("cd " + prefix + "/seattle/ && chmod +x ./uninstall.sh && ./uninstall.sh");
 
     # remove all traces
     integrationtestlib.log("removing all files")
-    os.system("rm -Rf " + prefix + "/seattle_repy/");
+    os.system("rm -Rf " + prefix + "/seattle/");
     os.system("rm -Rf " + prefix + "/seattle_linux.tgz")
     return
 
@@ -113,7 +113,7 @@ def download_and_install():
     integrationtestlib.log("unpacking...")
     os.system("tar -xzvf " + prefix + "/seattle_linux.tgz")
     integrationtestlib.log("installing...")
-    os.system("cd " + prefix + "/seattle_repy/ && ./install.sh")
+    os.system("cd " + prefix + "/seattle/ && ./install.sh")
     return
 
 
@@ -151,12 +151,12 @@ def main():
     integrationtestlib.log("retrieving vesseldict from installed Seattle")
     dict = {}
     try:
-        f=open(prefix + "/seattle_repy/vesseldict", "r")
+        f=open(prefix + "/seattle/seattle_repy/vesseldict", "r")
         lines = f.readlines()
         f.close()
         dict = eval(lines[0])
     except:
-        integrationtestlib.handle_exception("failed to open/read/eval vesseldict file")
+        integrationtestlib.handle_exception("failed to open/read/eval vesseldict file", "seattle downloadandinstall failed!")
         # uninstall Seattle and remove its dir
         uninstall_remove()
         sys.exit(0)
@@ -174,7 +174,7 @@ def main():
             if passed:
                 break
     except e:
-        integrationtestlib.handle_exception("failed in checking for onepercent key\n\nvesseldict is: " + str(dict))
+        integrationtestlib.handle_exception("failed in checking for onepercent key\n\nvesseldict is: " + str(dict), "seattle downloadandinstall failed!")
         # uninstall Seattle and remove its dir
         uninstall_remove()
         sys.exit(0)
@@ -183,7 +183,7 @@ def main():
     if not passed:
         text = "check for onepercent key:\n" + str(onepercent_publickey_e) + "..\n\nfailed\n\nvesseldict is: " + str(dict)
         integrationtestlib.log(text)
-        integrationtestlib.notify(text)
+        integrationtestlib.notify(text, "seattle downloadandinstall failed!")
     
     # uninstall Seattle and remove its dir
     uninstall_remove()
