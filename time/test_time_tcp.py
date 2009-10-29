@@ -66,7 +66,7 @@ def main():
   
   test_stop2 = getruntime()
   diff = ntp_t - max(times)
-  if diff > (2 + test_stop2 - test_stop1):
+  if diff > (8 + test_stop2 - test_stop1):
     exceedby = diff - (test_stop2-test_stop1)
     integrationtestlib.log('WARING large descrepancy between ntp and tcp times')
     notify_str += ' WARNING large descrepancy between ntp and tcp time: '+str(exceedby)
