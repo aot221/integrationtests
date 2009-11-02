@@ -40,13 +40,15 @@ def main():
   integrationtestlib.log("Looking up nat forwarders")  
   try:
     nodes = nat_forwarder_list_lookup()
+    total_nodes = advertise_lookup('NATFORWARDERRUNNING')
   except:
     nodes = [] #make sure we fail if there was an excpetion
 
   if len(nodes) < 10:
-    integrationtestlib.log('WARNING: only '+str(len(nodes))+' forwarders are running!')
+    integrationtestlib.log('WARNING: only '+str(len(nodes))+' forwarders are avaiable')
+    integrationtestlib.log('WARNING: only '+str(len(total_nodes))+' forwarders are running')
     
-    notify_str += 'WARNING: test_nat_servers_running.py FAILED, only '+str(len(nodes))+' nat forwarders are running!'
+    notify_str += 'WARNING: test_nat_servers_running.py FAILED, only '+str(len(nodes))+' nat forwarders are avaiable!,  '+str(len(total_nodes))+' are running.'
 
 
   # PART 2 check that nat forwarders are responsive
