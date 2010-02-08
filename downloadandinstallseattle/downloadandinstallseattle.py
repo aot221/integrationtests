@@ -108,6 +108,10 @@ def download_and_install():
     <Returns>
         None.
     """
+
+    if(os.path.isfile(prefix+"/seattle_linux.tgz")):
+        os.remove(prefix+"/seattle_linux.tgz")
+
     integrationtestlib.log("downloading distro for seattle_install_tester...")
     os.system("wget --no-check-certificate " + seattle_linux_url)
     integrationtestlib.log("unpacking...")
