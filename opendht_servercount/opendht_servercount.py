@@ -24,6 +24,7 @@
 import send_gmail
 import integrationtestlib
 import repyhelper
+import sys
 
 repyhelper.translate_and_import("openDHTadvertise.repy")
 
