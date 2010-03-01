@@ -27,13 +27,9 @@
   - notify_list, a list of strings with emails denoting who will be
     emailed when something goes wrong
 
-  - GMAIL_USER and GMAIL_PWD environment variables: the username and
-    password of the gmail user who will be sending the email to the
-    emails in the notify_list (see crontab line below).
-
   This script takes no arguments. A typical use of this script is to
   have it run periodically using something like the following crontab line:
-  7 * * * *  export GMAIL_USER='username' && export GMAIL_PWD='password' && /usr/bin/python /home/seattle/downloadandinstallseattle/downloadandinstallseattle.py > /home/seattle/cron_log.downloadandinstallseattle
+  7 * * * * /usr/bin/python /home/seattle/downloadandinstallseattle/downloadandinstallseattle.py > /home/seattle/cron_log.downloadandinstallseattle
 """
 
 import time
