@@ -40,6 +40,8 @@ from email import Encoders
 GMAIL_USER=""
 GMAIL_PWD=""
 
+gmail_file_name = "seattle_gmail_info"
+
 def init_gmail(gmail_user="", gmail_pwd="", gmail_user_shvarname="GMAIL_USER", gmail_pwd_shvarname="GMAIL_PWD"):
     """
     <Purpose>
@@ -69,20 +71,22 @@ def init_gmail(gmail_user="", gmail_pwd="", gmail_user_shvarname="GMAIL_USER", g
     global GMAIL_USER
     global GMAIL_PWD
 
-    if gmail_user is "":
-        try:
-            gmail_user = os.environ[gmail_user_shvarname]
-        except:
-            return False, "Failed to retrieve " +  str(gmail_user_shvarname) + " shell environment var"
-        
-    if gmail_pwd is "":
-        try:
-            gmail_pwd = os.environ[gmail_pwd_shvarname]
-        except:
-            return False, "Failed to retrieve " + str(gmail_pwd_shvarname) + " shell environment var"
+    gmail_user_info = {}
 
-    GMAIL_USER = gmail_user
-    GMAIL_PWD = gmail_pwd
+    # Get full file path
+    file_path = os.path.join(os.getcwd(), gmail_file_name)
+
+    if os.path.isfile(file_path):
+      gmail_file_object = open(file_path, 'r')
+      print 'read file ' + file_path 
+      gmail_user_info = eval(gmail_file_object.read())
+     
+      GMAIL_USER = gmail_user_info['GMAIL_USER']
+      GMAIL_PWD = gmail_user_info['GMAIL_PWD']     
+      print 'loaded gmail info'  
+    else:
+      return False, "Make sure the file '" + gmail_file_name + "' is in the current directory"         
+
     return True, ""
 
 

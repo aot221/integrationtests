@@ -123,6 +123,4 @@ def handle_exception(text, subject):
   # notify folks via email with the traceback of the exception
   notify(text + exception_traceback_str, subject)
 
-  # uninstall Seattle and remove its dir
-  uninstall_remove()
   return
