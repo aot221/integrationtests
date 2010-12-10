@@ -55,9 +55,11 @@ seattle_linux_url = "https://seattlegeni.cs.washington.edu/geni/download/seattle
 #onepercent_publickey_e = 11374924881397627694657891503972818975279141290591879258944253588899600389096760006002101031499188547300330800546193710201543484693030070856785048737553629L
 
 # onepercent_manyevents.publickey:
-onepercent_publickey_e = 100410155996328658394016174672712730146493471136460054943977610055010406541029967456210961113332433120911220994866027327246525018914945308813146095094266583446333536819644021403563644749883453501917642715769556118483161623360060413817439150957963107024505503830466865934362815594494856415719036027721190604347L
+#onepercent_publickey_e = 10041015599632865839401617467271273014649347113646005494397761005501040654102996745621096111333243312091122099486602732724652501891494530881314609509426658344633353681964402140356364474988345350
 
-
+# onepercent_manyevents.publickey:
+#onepercent_publickey_e = 100410155996328658394016174672712730146493471136460054943977610055010406541029967456210961113332433120911220994866027327246525018914945308813146095094266583446333536819644021403563644749883453501917642715769556118483161623360060413817439150957963107024505503830466865934362815594494856415719036027721190604347L
+twopercent_publickey = {'e': 65537L, 'n': 104283973845452278473567059872058302181099306478946860695753925866960062455387034090984928649172368336895511957180608166358198358557811956058533160134655085887217281584650941950088412008071410745320003819243027473383767411456759901168591653498109515401427898370664550473756850087580169500147037740069933812133L}
 
 def uninstall_remove():
     """
@@ -161,33 +163,35 @@ def main():
         uninstall_remove()
         sys.exit(0)
 
+
     # check if the vesseldict conforms to expectations
-    integrationtestlib.log("checking for onepercent pubkey in vessels..")
+    integrationtestlib.log("checking for twopercent pubkey in vessels..")
     passed = False
     try:
         for vname, vdata in dict.items():
             for k in vdata['userkeys']:
-                if k['e'] == onepercent_publickey_e:
+                if k == twopercent_publickey:
                     integrationtestlib.log("passed")
                     passed = True
                     break
             if passed:
                 break
     except e:
-        integrationtestlib.handle_exception("failed in checking for onepercent key\n\nvesseldict is: " + str(dict), "seattle downloadandinstall failed!")
+        integrationtestlib.handle_exception("failed in checking for twopercent key\n\nvesseldict is: " + str(dict), "seattle downloadandinstall failed!")
         # uninstall Seattle and remove its dir
         uninstall_remove()
         sys.exit(0)
 
     # if vesseldict not as expected, notify some people
     if not passed:
-        text = "check for onepercent key:\n" + str(onepercent_publickey_e) + "..\n\nfailed\n\nvesseldict is: " + str(dict)
+        text = "check for twopercent key:\n" + str(twopercent_publickey) + "..\n\nfailed\n\nvesseldict is: " + str(dict)
         integrationtestlib.log(text)
         integrationtestlib.notify(text, "seattle downloadandinstall failed!")
-    
+
     # uninstall Seattle and remove its dir
     uninstall_remove()
     return
+
 
 
 if __name__ == "__main__":
