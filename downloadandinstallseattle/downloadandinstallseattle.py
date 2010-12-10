@@ -9,6 +9,9 @@
 <Author>
   ivan@cs.washington.edu
   Ivan Beschastnikh
+  
+  monzum@cs.washington.edu
+  Monzur Muhammad
 
 <Purpose>
   Download, install and check the resulting Seattle installation for
@@ -21,10 +24,9 @@
   - seattle_linux_url, the url of the seattle distro to download,
     install, check
 
-  - onepercent_publickey_e, the onepercent node state e part of the
-    public key (what's checked after the install)
+  - twopercent_publickey, the twopercent node state 
 
-  - notify_list, a list of strings with emails denoting who will be
+  - integrationtestlib.notify_list, a list of strings with emails denoting who will be
     emailed when something goes wrong
 
   This script takes no arguments. A typical use of this script is to
