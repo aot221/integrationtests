@@ -61,7 +61,7 @@ def init():
       raise Exception(msg)
     return client
   except Exception, e:
-    _log('SeattleGENI test failed. Error: %s' % str(e))
+    _log('SeattleGENI test failed. Error: ' + str(e))
     sys.exit(2)
 
 
@@ -108,13 +108,13 @@ def _do_call(function, *args):
   try:
     return function(*args)
   except seattlegeni_xmlrpc.CommunicationError, e:
-    msg = 'Method %s failed. Error: %s' % (fname, str(e))
+    msg = 'Method ' + fname + ' failed. Error: ' + str(e)
     _notify_admins(msg)
   except seattlegeni_xmlrpc.UnableToAcquireResourcesError, e:
-    msg = 'Failed to acquire resources. Error: %s' % str(e)
+    msg = 'Failed to acquire resources. Error: ' + str(e)
     _notify_admins(msg)
   except Exception, e:
-    msg = 'Method %s failed. Error: %s' % (fname, str(e))
+    msg = 'Method ' + fname + ' failed. Error: ' + str(e)
     _log(msg)
 
 
