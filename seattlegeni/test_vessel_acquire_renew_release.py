@@ -1,6 +1,6 @@
 """
 <Program>
-  test_seattlegeni.py
+  test_vessel_acquire_renew_release.py
 
 <Started>
   03/01/2012
@@ -18,8 +18,8 @@
 <Usage>
   An example crontab entry for running this script every hour would be:
   
-  0 * * * * /home/seattle/integrationtests/test_seattlegeni.py >
-  /home/seattle/integrationtests/cron_log.test_seattlegeni
+  0 * * * * /home/seattle/integrationtests/test_vessel_acquire_renew_release.py >
+  /home/seattle/integrationtests/cron_log.test_vessel_acquire_renew_release
 """
 
 
