@@ -147,7 +147,7 @@ def main():
     # download and install Seattle
     download_and_install()
 
-    # sleep for a while, giving GENI time to process this new node
+    # sleep for a while, giving Clearinghouse time to process this new node
     integrationtestlib.log("sleeping for 30 minutes...")
     time.sleep(1800)
     
