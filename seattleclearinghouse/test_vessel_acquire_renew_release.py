@@ -26,7 +26,7 @@
 import time
 import sys
 
-import seattlegeni_xmlrpc
+import seattleclearinghouse_xmlrpc
 import integrationtestlib
 import send_gmail
 
@@ -52,7 +52,7 @@ def init():
     sys.exit(1)
 
   try:
-    client = seattlegeni_xmlrpc.SeattleGENIClient(username=USERNAME,
+    client = seattleclearinghouse_xmlrpc.SeattleGENIClient(username=USERNAME,
                private_key_string=private_key_string,
                allow_ssl_insecure=ALLOW_SSL_INSECURE)
 
@@ -107,10 +107,10 @@ def _do_call(function, *args):
   fname = function.__name__
   try:
     return function(*args)
-  except seattlegeni_xmlrpc.CommunicationError, e:
+  except seattleclearinghouse_xmlrpc.CommunicationError, e:
     msg = 'Method ' + fname + ' failed. Error: ' + str(e)
     _notify_admins(msg)
-  except seattlegeni_xmlrpc.UnableToAcquireResourcesError, e:
+  except seattleclearinghouse_xmlrpc.UnableToAcquireResourcesError, e:
     msg = 'Failed to acquire resources. Error: ' + str(e)
     _notify_admins(msg)
   except Exception, e:
