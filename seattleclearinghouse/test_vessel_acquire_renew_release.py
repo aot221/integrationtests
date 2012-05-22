@@ -52,7 +52,7 @@ def init():
     sys.exit(1)
 
   try:
-    client = seattleclearinghouse_xmlrpc.SeattleGENIClient(username=USERNAME,
+    client = seattleclearinghouse_xmlrpc.SeattleClearinghouseClient(username=USERNAME,
                private_key_string=private_key_string,
                allow_ssl_insecure=ALLOW_SSL_INSECURE)
 
