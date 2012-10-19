@@ -74,7 +74,7 @@ def init_gmail(gmail_user="", gmail_pwd="", gmail_user_shvarname="GMAIL_USER", g
     gmail_user_info = {}
 
     # Get full file path
-    file_path = os.path.join(os.getcwd(), gmail_file_name)
+    file_path = os.path.join(os.path.dirname(__file__), gmail_file_name)
 
     if os.path.isfile(file_path):
       gmail_file_object = open(file_path, 'r')

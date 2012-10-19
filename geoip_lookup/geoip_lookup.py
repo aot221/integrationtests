@@ -45,7 +45,6 @@ def main():
 
 
   # Initialize the integration test lib.
-  integrationtestlib.notify_list = ["monzum@gmail.com"]
   success,explanation_str = send_gmail.init_gmail()
   if not success:
     integrationtestlib.log(explanation_str)
