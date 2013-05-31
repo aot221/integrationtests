@@ -36,7 +36,7 @@ from threading import Thread
 
 
 #list of critical machines that should be always up and running 
-machine_list = ["seattle.cs.washington.edu", "seattlegeni.cs.washington.edu", "blackbox.cs.washington.edu", "testbed-xp2.cs.washington.edu", "testbed-freebsd.cs.washington.edu", "testbed-opensuse.cs.washington.edu", "testbed-mac.cs.washington.edu", "blah.sc.washington.edu"]
+machine_list = ["seattle.poly.edu", "seattleclearinghouse.poly.edu", "blackbox.poly.edu", "betaseattleclearinghouse.poly.edu", "custombuilder.poly.edu"]
 
 
 

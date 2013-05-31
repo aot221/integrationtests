@@ -36,7 +36,7 @@ def main():
   """
 
   # List of all the geoip servers.
-  geoip_server_list = ['http://betaseattleclearinghouse.poly.edu:12679', 'http://geoip.cs.washington.edu:12679']
+  geoip_server_list = ['http://geoipserver.poly.edu:12679', 'http://geoipserver2.poly.edu:12679']
 
   # Keep track of stats.
   servers_down = []

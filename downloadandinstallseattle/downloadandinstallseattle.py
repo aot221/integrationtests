@@ -47,7 +47,7 @@ import integrationtestlib
 prefix=os.getcwd()
 
 # the url from where we will fetch a linux version of seattle
-seattle_linux_url = "https://seattlegeni.cs.washington.edu/geni/download/seattle_install_tester/seattle_linux.tgz"
+seattle_linux_url = "https://seattleclearinghouse.poly.edu/download/seattle_install_tester/seattle_linux.tgz"
 
 # public key we will check for after seattle registers with geni
 # onepercent.publickey:
@@ -109,13 +109,13 @@ def download_and_install():
         None.
     """
 
-    if(os.path.isfile(prefix+"/seattle_linux.tgz")):
+    if(os.path.isfile(prefix+"/seattle_linux.tar.gz")):
         os.remove(prefix+"/seattle_linux.tgz")
 
     integrationtestlib.log("downloading distro for seattle_install_tester...")
     os.system("wget --no-check-certificate " + seattle_linux_url)
     integrationtestlib.log("unpacking...")
-    os.system("tar -xzvf " + prefix + "/seattle_linux.tgz")
+    os.system("tar -xzvf " + prefix + "/seattle_linux.tar.gz")
     integrationtestlib.log("installing...")
     os.system("cd " + prefix + "/seattle/ && ./install.sh")
     return

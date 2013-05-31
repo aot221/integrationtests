@@ -66,7 +66,7 @@ def monitor_processes(monitor_process_list, command_list, machine_name):
     integrationtestlib.log("Checking process: "+critical_process+".......")
     if not critical_process in processes_string:
       critical_process_down=True
-      error_message = error_message+critical_process+" is down on "+machine_name+".cs.washington.edu\n"
+      error_message = error_message+critical_process+" is down on "+machine_name+".poly.edu\n"
       print "FAIL"
 
     else:

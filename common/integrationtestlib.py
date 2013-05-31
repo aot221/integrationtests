@@ -26,7 +26,7 @@ import socket
 import sys
 
 # the people to notify on failure/if anything goes wrong
-notify_list = ["justinc@cs.washington.edu", "monzum@u.washington.edu"]
+notify_list = ["jcappos@poly.edu", "hermanchchen@gmail.com"]
 
 
 def log(msg):
