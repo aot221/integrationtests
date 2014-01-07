@@ -27,7 +27,7 @@ import sys
 
 # the people to notify on failure/if anything goes wrong
 notify_list = [
-  "justinc@poly.edu",
+  "jcappos@poly.edu",
   "albert.rafetseder@univie.ac.at",
   "monzum@u.washington.edu",
   "leon.wlaw@gmail.com",
