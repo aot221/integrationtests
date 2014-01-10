@@ -15,6 +15,7 @@
 import sys
 import send_gmail
 import integrationtestlib
+import traceback
 
 # use repy helper to bring in advertise.repy
 import repyhelper
@@ -30,17 +31,21 @@ def main():
   #add Eric Kimbrel to the email notify list
   integrationtestlib.notify_list.append("lekimbrel@gmail.com")
   
-  integrationtestlib.log("Looking up time_servers")  
+  try:
+    integrationtestlib.log("Looking up time_servers")
 
-  # verify that there are at least 8 time servers running
-  servers = centralizedadvertise_lookup("time_server")
-  if len(servers) < 8:
-    integrationtestlib.log('WARNING: only '+str(len(servers))+' timeservers are running!')
+    # verify that there are at least 8 time servers running
+    servers = advertise_lookup("time_server")
+    if len(servers) < 8:
+      integrationtestlib.log('WARNING: only '+str(len(servers))+' timeservers are running!')
     
-    integrationtestlib.notify('WARNING: test_time_servers_running.py FAILED, only '+str(len(servers))+' timeservers are running!', "test_time_servers_running test failed")
+      integrationtestlib.notify('WARNING: test_time_servers_running.py FAILED, only '+str(len(servers))+' timeservers are running!', "test_time_servers_running test failed")
   
-  integrationtestlib.log("Finished looking up test servers... Test Passed")
-  print "........................................................\n"
+    integrationtestlib.log("Finished looking up test servers... Test Passed")
+    print "........................................................\n"
+  except:
+    integrationtestlib.notify("Test failed for an unknown reason:\n" +
+      traceback.format_exc(), "test_time_servers_running test failed")
 
 if __name__ == '__main__':
   main()
