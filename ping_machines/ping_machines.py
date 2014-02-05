@@ -173,7 +173,7 @@ def main():
       irc_seattlebot.send_msg("The machines: "+str(machine_list)+" were pinged successfully")
 
   else:
-    integrationtestlib.notify(error_message)
+    integrationtestlib.notify(error_message, "Seattle machines down!")
     irc_seattlebot.send_msg(error_message) 
 
     
