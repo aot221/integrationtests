@@ -35,9 +35,6 @@ def main():
 
   notify_str = ''
 
-  #add Eric Kimbrel to the email notify list
-  integrationtestlib.notify_list.append("lekimbrel@gmail.com")
-    
   integrationtestlib.log("Starting test_time_tcp.py...")  
 
   # Whenever we fail to do tcp_time_updatetime, we add the exception string
