@@ -74,7 +74,7 @@ def monitor_processes(monitor_process_list, command_list, machine_name):
   error_message=error_message+"end of list of processes that are down.\n................................"
 
   if critical_process_down:
-    integrationtestlib.notify(error_message)
+    integrationtestlib.notify(error_message, "Critical process down!")
     irc_seattlebot.send_msg(error_message)
 
   else:
@@ -113,22 +113,23 @@ def main():
   #The commands that should be run on seattle to get all the required processes
   seattle_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $14}'"]
 
-  #processes that should be running on seattlegeni server
-  seattlegeni_process_list=['expire_vessels.py', 'donationtocanonical.py', 'canonical_to_onepercentmanyevents.py', 'onepercentmanyevents_to_onepercentmanyevents.py', 'geni_xmlrpc_server.py', 'dbnode_checker.py', 'apache2', 'mysqld', 'backend.py']
+  #processes that should be running on seattleclearinghouse server
+  seattleclearinghouse_process_list=['transition_donation_to_canonical.py', 'transition_onepercentmanyevents_to_canonical.py', 'transition_canonical_to_twopercent.py', 'transition_twopercent_to_twopercent.py', 'check_active_db_nodes.py', 'apache2', '/usr/sbin/mysqld', 'backend_daemon.py', 'lockserver_daemon.py']
 
-  #The commands that should be run on seattlegeni to get all the required processes  
-  seattlegeni_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $12}'"]
-  seattlegeni_command.append("ps auwx | grep apache | grep -v grep | grep root | awk '{print $11}'")
-  seattlegeni_command.append("ps auwx |grep mysqld |grep root | awk '{print $12}'")
-  seattlegeni_command.append("ps auwx | grep python | grep -v grep | grep justinc | awk '{print $12}'")
+  #The commands that should be run on seattleclearinghouse to get all the required processes  
+  seattleclearinghouse_command = ["ps auwx | grep python | grep -v grep | grep geni | awk '{print $12}'"]
+  seattleclearinghouse_command.append("ps auwx | grep apache | grep -v grep | grep root | awk '{print $11}'")
+  seattleclearinghouse_command.append("ps auwx |grep mysqld |grep mysql | awk '{print $11}'")
+  seattleclearinghouse_command.append("ps auwx | grep python | grep -v grep | grep justinc | awk '{print $12}'")
  
   #run monitor processes with the right command
   if sys.argv[1] == '-seattle':
     monitor_processes(seattle_process_list, seattle_command, "seattle")
-  elif sys.argv[1] == '-seattlegeni':
-    monitor_processes(seattlegeni_process_list, seattlegeni_command, "seattlegeni")
+  elif sys.argv[1] == '-seattleclearinghouse':
+    monitor_processes(seattleclearinghouse_process_list, seattleclearinghouse_command, "seattleclearinghouse")
 
 	
 	
 if __name__ == "__main__":
   main()
+
