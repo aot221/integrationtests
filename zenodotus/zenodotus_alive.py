@@ -1,3 +1,12 @@
+"""
+<Filename>
+  zenodotus_alive.py
+
+<Purpose>
+  This is an integration test script that will look up zenodotus via
+  DNS to ensure that it points to blackbox.
+
+"""
 import integrationtestlib
 import send_gmail
 import os
@@ -20,7 +29,7 @@ def main():
       # Can't do direct comparison between dig's output and hardcoded string
       # TTL value changes on each call.  Instead, check if any of the lines
       # contain the entry for blackbox.
-      if 'blackbox.poly.edu.' in line.split() and '128.238.63.50' in line.split():
+      if 'zenodotus.poly.edu.' in line.split() and '128.238.63.50' in line.split():
         break
     else:
       print "Zenodotus failed to respond properly!"
