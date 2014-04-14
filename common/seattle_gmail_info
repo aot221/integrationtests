@@ -1,1 +1,6 @@
-{'GMAIL_USER': 'seattle.devel@gmail.com', 'GMAIL_PWD': 'repyrepy'}
+# The credentials to use when sending out e-mails.
+
+# The next line will trigger a SyntaxError.  This is here so that the
+# developer that is setting up these tests will see this error.
+Please remove this line and change the credentials below!
+{'GMAIL_USER': 'seattle-devel-email-account-name@gmail.com', 'GMAIL_PWD': 'seattle-devel-password'}
