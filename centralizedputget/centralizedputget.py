@@ -1044,15 +1044,11 @@ def main():
     try:
         ret_value = centralizedadvertise_lookup(key)
         # TODO: check the return value as well
-        if str(value) not in ret_value:
+        if ret_value.count(value) > 1 :
+            integrationtestlib.handle_exception("ret_value already exists")
 
-            integrationtestlib.handle_exception("ret_value is incorrect")
-            raise ValueError("ret value is incorrect")
-        #ret_value = int(ret_value[0])
-        #if (ret_value != value):
-        #    integrationtestlib.handle_exception("ret_value is incorrect")
     except:
-        integrationtestlib.handle_exception("centralizedadvertise_lookup() failed")
+        integrationtestlib.handle_exception("centralizedadvertise_lookup() failed", "centralizedputget.py monitor script failure")
         sys.exit(0)
 
     lookup_timedout_timer.cancel()
