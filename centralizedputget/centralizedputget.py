@@ -1043,12 +1043,13 @@ def main():
     integrationtestlib.log("calling centralizedadvertise_lookup(key: " + str(key) + ")")
     try:
         ret_value = centralizedadvertise_lookup(key)
-        # TODO: check the return value as well
+
+        #This will check if there is more than one of the same value being returned
         if ret_value.count(value) > 1 :
-            integrationtestlib.handle_exception("ret_value already exists")
+            integrationtestlib.handle_exception("returned more than one occurrance of the same value")
 
     except:
-        integrationtestlib.handle_exception("centralizedadvertise_lookup() failed", "centralizedputget.py monitor script failure")
+        integrationtestlib.handle_exception("centralizedadvertise_lookup() failed", "centralizedputget monitor script failure")
         sys.exit(0)
 
     lookup_timedout_timer.cancel()
