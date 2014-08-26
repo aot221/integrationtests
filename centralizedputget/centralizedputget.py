@@ -1044,9 +1044,9 @@ def main():
     try:
         ret_value = centralizedadvertise_lookup(key)
 
-        #This will check if there is more than one of the same value being returned
+        #Check in case random.randint() produces same key again.
         if ret_value.count(value) > 1 :
-            integrationtestlib.handle_exception("returned more than one occurrance of the same value")
+          raise Exception("Multiple copies of same key")
 
     except:
         integrationtestlib.handle_exception("centralizedadvertise_lookup() failed", "centralizedputget monitor script failure")
