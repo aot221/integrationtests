@@ -754,7 +754,7 @@ def centralizedadvertisebase_announce(servername, serverport, key, value, ttlval
 
      ValueError if ttlval is not positive 
 
-     CentralAdvertiseError is raised the server response is corrupted
+     CentralAdvertiseError is raised the server response centralizedadvertisebase_announceis corrupted
 
      Various network and timeout exceptions are raised by timeout_openconn
      and session_sendmessage / session_recvmessage
@@ -1043,9 +1043,13 @@ def main():
     integrationtestlib.log("calling centralizedadvertise_lookup(key: " + str(key) + ")")
     try:
         ret_value = centralizedadvertise_lookup(key)
+        print ret_value
 
+        #Check if the value being returned is the one we want
+        if value not in ret_value:
+            raise Exception("incorrect value returned")
         #Check in case random.randint() produces same key again.
-        if ret_value.count(value) > 1 :
+        elif len(ret_value) > 1 :
           raise Exception("Multiple copies of same key")
 
     except:
